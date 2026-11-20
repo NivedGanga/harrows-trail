@@ -5,6 +5,7 @@ return function(storage)
   red_mesa={center={x=623,z=788},radius=64,half_x=19,half_z=2,height=8,biome_prefix='Mesa',base_y=21},
   dust_flats={center={x=642,z=1024},radius=80,half_x=26,half_z=16,height=5,biome_prefix='Desert',base_y=11},
   dry_gulch={center={x=523,z=1212},radius=64,half_x=15,half_z=9,height=9,biome_prefix='Plains',base_y=8},
+  ghost_mine={center={x=560,z=844},radius=64,half_x=2,half_z=14,height=5,biome_prefix='Mesa',base_y=21},
  }
  local natural_ground={['mcl_core:dirt_with_grass']=true,['mcl_core:dirt']=true,['mcl_core:sand']=true,['mcl_core:redsand']=true,['mcl_colorblocks:hardened_clay']=true,['mcl_colorblocks:hardened_clay_orange']=true}
  for color in pairs(mcl_dyes.colors) do natural_ground['mcl_colorblocks:hardened_clay_'..color]=true end

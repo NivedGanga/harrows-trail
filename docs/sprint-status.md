@@ -203,3 +203,8 @@ A fresh disposable copy `.local/playcheck.BykoGy` was launched with Luanti 5.17.
 
 - Spread the Dust Flats features over separate surveyed footprints and moved the Dry Gulch plan to Plains near X=523/Z=1212. The former Dry Gulch candidate was separated from the route; the new area is on a surveyed connected landmass, but the completed buildings and their approaches still need route verification. None of this construction data is active in ordinary gameplay yet.
 - `./tests/run-sprint6.sh` PASS: write, read, blocked, modified and modified_read, including refusal after restarting a player-modified site. Logs: `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.KOIirH`. These are server-side tests; visual presentation and mounted travel were not verified. Ghost Mine, Iron Pass, Silver Spur and progression integration remain outstanding.
+
+### Sprint 6 Ghost Mine construction checkpoint (2026-11-21)
+
+- Added a preliminary Mesa construction plan near X=560/Z=844 with separate entrance, tracks and office interaction fixtures. It passes the safe placement checks in the pinned seed but is not connected to the chapter, is not a completed mine, and has not been checked for a playable route or appearance. Iron Pass and Silver Spur still need sites.
+- `./tests/run-sprint6.sh` PASS: write, read, blocked, modified and modified_read for all three construction plans. Logs: `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.sz0Wsp`. No graphical or connected-player check was performed.

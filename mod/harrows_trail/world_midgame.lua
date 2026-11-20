@@ -12,11 +12,17 @@ local sites={
   {name='stable',pos={x=522,y=7,z=1218},half=2,material='mcl_trees:wood_spruce',open=true,actor='dutch'},
   {name='tower',pos={x=510,y=6,z=1206},half=2,material='mcl_trees:wood_spruce',open=true,tower=true},
  },
+ ghost_mine={
+  {name='entrance',pos={x=560,y=21,z=832},half=1,material='mcl_trees:wood_spruce',open=true,fixture='mine_gate'},
+  {name='tracks',pos={x=560,y=21,z=840},half=1,material='mcl_trees:wood_spruce',open=true,fixture='mine_clue'},
+  {name='office',pos={x=560,y=20,z=856},half=1,material='mcl_trees:wood_spruce',fixture='ledger1'},
+ },
 }
 local positions={
  dust={x=642,y=11,z=1012},exposed={x=658,y=11,z=1024},
  shelter1={x=618,y=13,z=1010},shelter2={x=616,y=11,z=1036},
  gulch={x=536,y=9,z=1212},ruth_gulch={x=518,y=7,z=1210},dutch={x=522,y=7,z=1218},
+ mine_gate={x=559,y=22,z=832},mine_clue={x=559,y=22,z=840},ledger1={x=559,y=21,z=856},
 }
 local function layout(id)
  local nodes,zones={},{}
