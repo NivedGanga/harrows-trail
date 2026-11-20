@@ -11,7 +11,9 @@ local gates = {
   for _,stack in ipairs(p:get_inventory():get_list('main')) do
    if stack:get_name()=='mcl_maps:filled_map' then
     local meta=stack:get_meta(); local lo=core.string_to_pos(meta:get_string('mcl_maps:minp')); local hi=core.string_to_pos(meta:get_string('mcl_maps:maxp'))
-    if meta:get_string('mcl_maps:id')~='' and lo and hi and lo.x<=125 and hi.x>=125 and lo.z<=0 and hi.z>=0 then return true end
+    local x,z=125,0
+    if ctx.midgame and ctx.midgame() then x,z=560,844 end
+    if meta:get_string('mcl_maps:id')~='' and lo and hi and lo.x<=x and hi.x>=x and lo.z<=z and hi.z>=z then return true end
    end
   end
   return false
@@ -60,6 +62,15 @@ local function ada(p,s,reaction)
  prompt(p,'ada',(reaction or '')..' Crane was a railroad detective. Jesse rode with him and knows his hideouts. '..gates[3].text..' Search the abandoned payroll box near the office or earn gold on ranch deliveries.', 'bail;Confirm bail')
 end
 local function journal(s)
+ if ctx.midgame and ctx.midgame() and s.flags.arrived then
+  if not s.unlocked['5'] then return 'Follow the walking trail to Iron Pass. Lead your horse or leave it safely where the trail narrows. '..gates[5].text end
+  if not s.flags.rubble1 then return 'Clear the western obstruction inside the timber shaft.' end
+  if not s.flags.rubble2 then return 'Follow the shaft to its eastern obstruction and clear it.' end
+  if not s.map_fragments['3'] then return 'Descend to Silver Spur and search the assay office. The optional map desk and safe are inside.' end
+  if not s.flags.station_breached then return 'At Silver Spur’s assay office, use /stagecoach station to reach the temporary station site. Place the charge at the station, then trigger it separately. '..gates[6].text end
+  if not s.unlocked['7'] then return 'From the station use /stagecoach mine. Fill a map of the badlands near the Ghost Mine (560, 22, 844), then approach its entrance. The filled map is retained.' end
+  if not s.flags.ledger1 then return 'Investigate Nora’s trail at the Ghost Mine entrance, then search the timber office for ledger page 1.' end
+ end
  if s.flags.arrived then
   if not s.unlocked['5'] then return 'Nora was taken toward Iron Pass. Go east to the pass marker. '..gates[5].text end
   if not s.map_fragments['3'] then return 'Clear the two marked shaft obstructions in order, then search the Silver Spur assay office for Samuel’s fragment.' end
@@ -80,13 +91,14 @@ local function journal(s)
 end
 local function interact(kind,pos,p,s)
  local inv=p:get_inventory(); local name=p:get_player_name()
+ local mid=ctx.midgame and ctx.midgame()
  if more[kind] then
   if not s.flags.arrived then message(p,'The trail','Reach Dry Gulch before following Nora east.'); return true end
   if kind=='pass' then prompt(p,kind,gates[5].text..' Clear the collapsed shaft to reach Silver Spur.','start5;Enter Iron Pass')
   elseif kind=='rubble1' or kind=='rubble2' then
    if not s.unlocked['5'] then message(p,'Collapsed shaft','Prepare at Iron Pass first.')
    elseif kind=='rubble2' and not s.flags.rubble1 then message(p,'Collapsed shaft','Clear the western obstruction first.')
-   else s.flags[kind]=true; save(name); message(p,'Collapsed shaft',kind=='rubble1' and 'The first obstruction is clear. Follow the shaft east to the second.' or 'The route is clear. Search the assay office east for Samuel’s fragment.') end
+   else s.flags[kind]=true; save(name);if mid and ctx.clear_rubble then ctx.clear_rubble(kind) end;message(p,'Collapsed shaft',kind=='rubble1' and 'The first obstruction is clear. Follow the shaft east to the second.' or 'The route is clear. Search the assay office for Samuel’s fragment.') end
   elseif kind=='assay' then
    if not s.flags.rubble2 then message(p,'Assay office','Clear the shaft before searching here.')
    elseif not s.map_fragments['3'] and not ctx.grant(inv,ItemStack('harrows_trail:fragment_3')) then message(p,'Assay office','Make room for the map fragment and try again.')
@@ -111,7 +123,7 @@ local function interact(kind,pos,p,s)
    elseif s.flags.station_breached then message(p,'Barricade','The breach is open. Crane fled with Nora to the Ghost Mine.')
    else prompt(p,kind,'Your charge is placed on the '..(s.flags.charge_side or 'left')..' side. Trigger it when ready; no timer.','trigger;Trigger charge') end
   elseif kind=='mine_gate' then
-   if not s.flags.station_breached then message(p,'Ghost Mine','Follow Crane from the station first.') else prompt(p,kind,gates[7].text..' Fill an empty map at Dry Gulch (125, 221, 0).','start7;Enter mine') end
+   if not s.flags.station_breached then message(p,'Ghost Mine','Follow Crane from the station first.') else prompt(p,kind,gates[7].text..((ctx.midgame and ctx.midgame()) and ' Fill an empty map in these badlands near the entrance (560, 22, 844).' or ' Fill an empty map at Dry Gulch (125, 221, 0).'),'start7;Enter mine') end
   elseif kind=='mine_clue' then
    if not s.unlocked['7'] then message(p,'Mine tracks','Bring the map to the mine gate first.') else s.flags.mine_clue=true; save(name); message(p,'Mine tracks','Nora’s ribbon catches on a timber. Footprints lead to a ledger deeper east.') end
   elseif kind=='ledger1' then
@@ -154,18 +166,18 @@ local function interact(kind,pos,p,s)
   end
  elseif kind=='dust' then
   if not s.flags.jesse_briefed then message(p,'Dust Road','Speak to Jesse after posting bail first.')
-  else prompt(p,'dust',gates[4].text..' Crossing starts at night; you may wait safely here. Exposed: one marker, gale slows travel. Sheltered: two markers via the northern shelters, no wind penalty. No deadline.'..(ctx.grounded and ' Use /stagecoach here to return to Red Mesa.' or ''),'exposed_route;Exposed route','sheltered_route;Sheltered route') end
+  else prompt(p,'dust',gates[4].text..' Crossing starts at night; you may wait safely here. '..(mid and 'Exposed: the eastern shelter. Sheltered: visit the western shelters in order, first the northern one, then the southern one. Dry Gulch lies southwest beyond the sand.' or 'Exposed: one marker, gale slows travel. Sheltered: two markers via the northern shelters, no wind penalty.')..' No deadline.'..(ctx.grounded and not mid and ' Use /stagecoach here to return to Red Mesa.' or ''),'exposed_route;Exposed route','sheltered_route;Sheltered route') end
  elseif kind=='exposed' or kind=='shelter1' or kind=='shelter2' then
   if not s.unlocked['4'] then message(p,'Unlit trail','Your lanterns will reveal these trail signs after you prepare at the Dust Road.')
   elseif s.flags.route=='exposed' and kind=='exposed' then
    if p:get_attach() then message(p,'Exposed gale','Dismount and lead your horse through the gale on foot before reading this marker.'); return true end
-   s.flags.crossing_mark=true; save(name); message(p,'Lantern-lit marker','Through the blowing dust: Dry Gulch lies east. The gale makes every step heavy.')
+   s.flags.crossing_mark=true; save(name); message(p,'Lantern-lit marker',mid and 'Through the blowing dust: the trading post at Dry Gulch lies southwest. The gale makes every step heavy.' or 'Through the blowing dust: Dry Gulch lies east. The gale makes every step heavy.')
   elseif s.flags.route=='sheltered' then
    if kind=='shelter1' then s.flags.shelter1=true elseif kind=='shelter2' and s.flags.shelter1 then s.flags.crossing_mark=true end
-   save(name); message(p,'Lantern-lit shelter','Rock walls break the wind. Follow the shelters in order west to east, then turn south for Dry Gulch.')
+   save(name); message(p,'Lantern-lit shelter',mid and 'Rock walls break the wind. Visit the northern shelter first, then the southern one. Continue southwest to Dry Gulch.' or 'Rock walls break the wind. Follow the shelters in order west to east, then turn south for Dry Gulch.')
   end
  elseif kind=='gulch' then
-  if s.unlocked['4'] and s.flags.crossing_mark then s.flags.arrived=true; save(name); message(p,'Dry Gulch — Jesse','You made it. Crane rode toward Iron Pass with Nora. I’m riding on alone. Ruth’s shop is here; follow the pass marker east.') else message(p,'Dry Gulch','Return to Jesse’s Dust Road trail. Follow your chosen lantern markers before concluding the crossing.') end
+  if s.unlocked['4'] and s.flags.crossing_mark then s.flags.arrived=true; save(name); message(p,'Dry Gulch — Jesse',mid and 'You made it. Crane took Nora toward Iron Pass. Follow the long northwest walking trail around the water. I’m riding on alone. Prepare here at Ruth’s shop and Dutch’s stable before leaving.' or 'You made it. Crane rode toward Iron Pass with Nora. I’m riding on alone. Ruth’s shop is here; follow the pass marker east.') else message(p,'Dry Gulch','Return to Jesse’s Dust Road trail. Follow your chosen lantern markers before concluding the crossing.') end
  else return false end
  return true
 end
@@ -214,6 +226,7 @@ core.register_on_player_receive_fields(receive)
 local building=false
 local function ensure()
  if building or storage:get_string('chapter_site')=='1' then return end
+ if ctx.midgame and ctx.midgame() then storage:set_string('chapter_site','1');return end
  building=true
  core.emerge_area({x=-6,y=220,z=-7},{x=135,y=225,z=22},function(_,action,left)
   if action==core.EMERGE_ERRORED or action==core.EMERGE_CANCELLED then building=false; return end
@@ -243,7 +256,8 @@ local function ensure_more()
   if left~=0 then return end
   local layout={}
   for x=136,260 do for z=-7,7 do layout[#layout+1]={pos={x=x,y=220,z=z},name='harrows_trail:floor'} end end
-  for k,p in pairs(more) do layout[#layout+1]={pos=p,name='harrows_trail:'..k} end
+  local grounded={pass=true,rubble1=true,rubble2=true,assay=true,cartography=true,gold_cache=true,mine_gate=true,mine_clue=true,ledger1=true}
+  for k,p in pairs(more) do if not (ctx.midgame and ctx.midgame() and grounded[k]) then layout[#layout+1]={pos=p,name='harrows_trail:'..k} end end
   for _,e in ipairs(layout) do local n=core.get_node(e.pos).name; if n~='air' and n~=e.name then core.log('error','[harrows_trail] Sprint 3 site occupied; preserved'); more_building=false; return end end
   for _,e in ipairs(layout) do core.set_node(e.pos,{name=e.name}); core.get_meta(e.pos):set_string('infotext',e.name..' (right-click)') end
   storage:set_string('sprint3_site','1'); more_building=false
@@ -268,7 +282,9 @@ core.register_globalstep(function(dt)
   elseif s and s.flags.arrived and marker_huds[name] then
    for _,id in ipairs(marker_huds[name]) do p:hud_remove(id) end; marker_huds[name]=nil
   end
-  local storm=s and s.unlocked['4'] and not s.flags.arrived and at.x>74 and at.x<116 and math.abs(at.z)<5 and s.flags.route=='exposed'
+  local storm_area=at.x>74 and at.x<116 and math.abs(at.z)<5
+  if ctx.midgame and ctx.midgame() then storm_area=at.x>=640 and at.x<=675 and at.z>=1010 and at.z<=1040 end
+  local storm=s and s.unlocked['4'] and not s.flags.arrived and storm_area and s.flags.route=='exposed'
   local name=p:get_player_name()
   if storm and not windy[name] then windy[name]=p:get_physics_override().speed; p:set_physics_override({speed=windy[name]*0.55})
   elseif not storm and windy[name] then p:set_physics_override({speed=windy[name]}); windy[name]=nil end

@@ -41,7 +41,7 @@ This repository contains the Acts 1–10 story implementation and a developing g
 |---|---|
 | **Story progression** | Acts 1–10 are implemented in the mod, including the Widowmaker finale, verdict branches, and epilogues. The finale has automated simulated-player coverage. |
 | **Opening world** | A fresh launcher world uses a surveyed seed and guarded, grounded Ranch and Red Mesa sites. The buildings, characters, route, and mounted travel still need graphical verification. |
-| **Mid-game world** | Dust Flats, Dry Gulch, Ghost Mine, Iron Pass, and Silver Spur have preliminary construction data and server-side placement checks. Much of this is not yet connected to ordinary progression; the established route still uses elevated prototype sections. |
+| **Mid-game world** | New layout-version-6 worlds use grounded Dust Flats, Dry Gulch, Ghost Mine, Iron Pass and Silver Spur, with ordered shaft clearing, a walking trail and checked bridges. Server integration and restart tests pass. Temporary stagecoach links reach the elevated station until Sprint 7. Graphics and actual riding remain unverified. |
 | **Late-game world and presentation** | The grounded Station, Bitter River, and Widowmaker pass; distinct polished character avatars; daily routines; regional weather/audio; and final release QA remain future work. |
 | **Player testing** | Some earlier progression and native horse taming/riding are player-reported. The complete Acts 1–10 graphical playthrough has not been verified. |
 
@@ -93,7 +93,9 @@ The test runners use temporary or disposable worlds; they do not represent a com
 |---|---|
 | `./tests/run-sprint1.sh` | Core progression/state regression, Acts 1–8 and finale callbacks, save/restart behavior, safe placement checks, and site survey. |
 | `./tests/run-sprint5.sh` | Grounded opening placement, simulated interactions, restart/idempotence, wrong-seed refusal, legacy-save preservation, and conflict handling. |
-| `./tests/run-sprint6.sh` | Preliminary mid-game construction plans, restart, occupied-site refusal, and player-modified-site protection. |
+| `./tests/run-sprint6.sh` | Mid-game sites and bridges: placement, restart, occupied-site refusal and player-modified-site protection. |
+| `./tests/run-sprint6-integration.sh` | Grounded act interactions, physical shaft clearing, temporary station travel, gates, one-time rewards and restart. |
+| `./tests/run-sprint6-route.sh /path/to/disposable/world` | Copies a world from the Sprint 6 placement suite and verifies a continuous walking corridor with local detours. |
 | `./tests/run-play-safety.sh` | Launcher safeguards, including preservation of earlier worlds and refusal of unsafe paths. |
 | `./tests/run-sprint4-death.sh` | Attempts connected-player death/restart verification; the recorded run could not create an OpenGL context and did not reach gameplay. |
 
@@ -132,10 +134,6 @@ This is an active hackathon project. For bugs or implementation work, begin with
 
 **Harrow’s Trail is a work in progress.** Its central promise is a family rescue that becomes a question of justice; its remaining work is to make the whole frontier feel as real and playable as that promise.
 
-Sprint 6 bridge checkpoint: an inactive bridge plan near X=500/Z=689 passed `./tests/run-sprint6.sh` (write, read, blocked, modified, modified_read), including missing-anchor and anchor-metadata refusal. Logs: `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.L2RWOG`. The complete mountain route and graphical presentation remain unverified; Sprint 6 is incomplete.
+Sprint 6 is implemented for new versioned worlds and server-verified. Existing unversioned worlds retain their earlier layouts. Coordinates, temporary stagecoach connections and placement limitations are documented in [docs/world-sites.md](docs/world-sites.md). No graphical or actual-riding acceptance is claimed.
 
-Sprint 6 bridge approach correction: the inactive plan is now near X=504/Z=689 with a landing step. `./tests/run-sprint6.sh` passed all five phases including landing and approach-clearance assertions (logs `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.BczwQw`). The earlier alignment failed the walking survey; full route, actual riding and graphics remain unverified.
-
-Sprint 6 foothill crossing checkpoint: two additional inactive bridge plans passed `./tests/run-sprint6.sh` in all five phases, including bank landing checks (logs `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.WhvHkX`). The connected route, gameplay activation and graphics remain unverified.
-
-Sprint 6 walking-corridor check: after `./tests/run-sprint6.sh`, run `./tests/run-sprint6-route.sh /absolute/path/to/its/world`. The check copies that disposable source and requires continuous walking detours along the recorded corridor. Latest result: PASS, 3,477 verified walking cells and zero corridor failures (logs `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-route-check.yiF4I2`). Fixed cells can be obstructed by generated vegetation; actual riding, gameplay activation and graphics remain unverified.
+Latest checks: `./tests/run-sprint1.sh` PASS (write, read, occupied-site, survey); `./tests/run-sprint5.sh` PASS (12 phases); `./tests/run-sprint6.sh` PASS (five phases); `./tests/run-sprint6-integration.sh` PASS (write/read). `./tests/run-sprint6-route.sh /var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.nuqJfD/world` PASS with 3,486 verified walking cells and zero corridor failures. The exact original cells included 35 vegetation obstructions that the continuous walking check bypassed. Logs and unresolved verification limits are in [docs/sprint-status.md](docs/sprint-status.md).

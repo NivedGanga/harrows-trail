@@ -93,7 +93,15 @@ local function test_opening()
  local label,target=api.opening_target(p,s); assert(label=='Ruth: lanterns' and target==pos.ruth)
  actor('ruth',pos.ruth); api.chapter.receive(p,'harrows_trail:story',{lantern_buy=true})
  assert(inv:contains_item('main','mcl_lanterns:lantern_floor 4'))
- label,target=api.opening_target(p,s); assert(label=='Stagecoach desk' and target==pos.stagecoach)
+ label,target=api.opening_target(p,s)
+ if api.storage:get_string('world_layout_version')=='6' then
+  assert(label=='Dust Flats departure' and target==api.chapter.positions.dust)
+  local old_get=core.get_player_by_name
+  core.get_player_by_name=function(name) if name=='opening_test' then return p else return old_get(name) end end
+  p.pos=pos.stagecoach; assert(not api.world_travel.travel('opening_test'))
+  core.get_player_by_name=old_get
+ else
+ assert(label=='Stagecoach desk' and target==pos.stagecoach)
  assert(api.world_travel.clear(api.world_travel.mesa))
  local old_get=core.get_player_by_name; local old_emerge=core.emerge_area
  core.get_player_by_name=function(name) if name=='opening_test' then return p else return old_get(name) end end
@@ -110,6 +118,7 @@ local function test_opening()
  assert(api.world_travel.travel('opening_test')); assert(vector.distance(p.pos,api.chapter.positions.dust)<0.01)
  assert(core.get_node(landing).name=='mcl_core:obsidian'); core.set_node(landing,{name='air'})
  core.get_player_by_name=old_get; core.emerge_area=old_emerge
+ end
  api.save('opening_test'); core.show_formspec=old
 end
 local function test_route()
