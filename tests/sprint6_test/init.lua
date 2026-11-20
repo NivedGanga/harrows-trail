@@ -1,6 +1,6 @@
 local api=assert(harrows_trail_test)
 local phase=assert(core.settings:get('harrows_sprint6_phase'))
-local jobs={'dust_flats','dry_gulch','ghost_mine','iron_pass','silver_spur'}
+local jobs={'dust_flats','dry_gulch','ghost_mine','iron_pass','silver_spur','gulch_bridge'}
 local function finish()
  core.log('action','[sprint6_test] PASS '..phase)
  core.request_shutdown('Sprint 6 test complete',false,0)
@@ -12,6 +12,12 @@ local function run(i)
   {x=p.x+site.half_x+48,y=y+site.height+48,z=p.z+site.half_z+48},function(_,action,left)
   assert(action~=core.EMERGE_ERRORED and action~=core.EMERGE_CANCELLED);if left~=0 then return end
   local layout,zones=api.world_midgame.layout(id);assert(#layout>0 and #zones>0)
+  if id=='gulch_bridge' and phase=='write' then
+   local anchors=site.bridge_anchors
+   site.bridge_anchors=nil; assert(not api.world_sites.preflight(site,y,layout,zones));site.bridge_anchors=anchors
+   local at=anchors[1];core.get_meta(at):set_string('owner','test')
+   assert(not api.world_sites.preflight(site,y,layout,zones));core.get_meta(at):set_string('owner','')
+  end
   if phase=='blocked' then
    local target=layout[1].pos;assert(core.get_node(target).name=='air' or core.get_node(target).name=='mcl_core:snow')
    core.set_node(target,{name='mcl_core:obsidian'})

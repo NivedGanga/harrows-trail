@@ -18,6 +18,7 @@ local sites={
   {name='office',pos={x=560,y=20,z=856},half=1,material='mcl_trees:wood_spruce',fixture='ledger1'},
  },
  iron_pass={},
+ gulch_bridge={},
  silver_spur={
   {name='assay_office',pos={x=-464,y=10,z=-548},half=2,material='mcl_trees:wood_spruce',fixture='assay',extra_fixtures={{dx=2,dz=0,kind='cartography'},{dx=0,dz=2,kind='gold_cache'}}},
   {name='shack',pos={x=-466,y=11,z=-556},half=2,material='mcl_trees:wood_spruce'},
@@ -33,6 +34,14 @@ local positions={
 }
 local function layout(id)
  local nodes,zones={},{}
+ if id=='gulch_bridge' then
+  zones[1]={min={x=498,y=15,z=677},max={x=502,y=18,z=700},bridge_span=true}
+  for x=498,502 do for z=677,700 do
+   nodes[#nodes+1]={pos={x=x,y=15,z=z},name='mcl_trees:wood_spruce'}
+   if x==498 or x==502 then for y=16,17 do nodes[#nodes+1]={pos={x=x,y=y,z=z},name='mcl_trees:wood_spruce'} end end
+  end end
+  return nodes,zones
+ end
  if id=='iron_pass' then
   local spans={
    {x=-486,z=-516,roof=57,kind='pass',heights={{52,52,52,52,52},{53,52,52,52,52},{53,53,53,53,53},{53,53,53,53,53},{53,53,53,52,52}}},

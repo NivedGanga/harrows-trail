@@ -8,6 +8,8 @@ return function(storage)
   ghost_mine={center={x=560,z=844},radius=64,half_x=2,half_z=14,height=5,biome_prefix='Mesa',base_y=21},
   iron_pass={center={x=-480,z=-516},radius=64,half_x=8,half_z=4,height=10,biome_prefix='ExtremeHills+_snowtop',base_y=53,allow_mountain_ground=true,allow_natural_snow=true},
   silver_spur={center={x=-463,z=-557},radius=64,half_x=5,half_z=11,height=8,biome_prefix='ExtremeHills+',base_y=11},
+  gulch_bridge={center={x=500,z=689},radius=64,half_x=2,half_z=12,height=4,biome_prefix='Desert',base_y=15,
+   bridge_anchors={{x=500,y=14,z=677},{x=500,y=14,z=700}}},
  }
  local natural_ground={['mcl_core:dirt_with_grass']=true,['mcl_core:dirt']=true,['mcl_core:sand']=true,['mcl_core:redsand']=true,['mcl_colorblocks:hardened_clay']=true,['mcl_colorblocks:hardened_clay_orange']=true}
  for color in pairs(mcl_dyes.colors) do natural_ground['mcl_colorblocks:hardened_clay_'..color]=true end
@@ -47,6 +49,15 @@ return function(storage)
    end
   end
   if #mcl_villages.get_pois_in_by_nodepos(min,max)>0 then return false,'village point of interest nearby' end
+  if site.bridge_anchors then
+   if #site.bridge_anchors<2 then return false,'bridge needs checked anchors' end
+   for _,pos in ipairs(site.bridge_anchors) do
+    local node=core.get_node_or_nil(pos)
+    if not node or not natural_ground[node.name] or core.get_item_group(node.name,'solid')==0 then return false,'bridge anchor is not natural ground' end
+    local meta=core.get_meta(pos):to_table()
+    if core.is_protected(pos,'') or core.get_node_timer(pos):is_started() or next(meta.fields or {}) or next(meta.inventory or {}) then return false,'bridge anchor is occupied or protected' end
+   end
+  end
   zones=zones or {{min={x=center.x-site.half_x,y=y,z=center.z-site.half_z},max={x=center.x+site.half_x,y=y+site.height-1,z=center.z+site.half_z}}}
   if type(zones)~='table' or #zones==0 then return false,'invalid zones' end
   for _,zone in ipairs(zones) do
@@ -59,7 +70,8 @@ return function(storage)
    for x=a.x,b.x do for z=a.z,b.z do
     local ground=core.get_node_or_nil({x=x,y=a.y-1,z=z})
     local mountain_ground=ground and site.allow_mountain_ground and (ground.name=='mcl_core:dirt_with_grass_snow' or ground.name=='mcl_core:stone')
-    if not ground or not (natural_ground[ground.name] or mountain_ground) or core.get_item_group(ground.name,'solid')==0 then return false,'missing, uneven, or non-natural ground' end
+    local span=zone.bridge_span==true and site.bridge_anchors and #site.bridge_anchors>=2
+    if not span and (not ground or not (natural_ground[ground.name] or mountain_ground) or core.get_item_group(ground.name,'solid')==0) then return false,'missing, uneven, or non-natural ground' end
     for yy=a.y,b.y do
      local pos={x=x,y=yy,z=z}; local node=core.get_node_or_nil(pos)
      local target=targets[core.pos_to_string(pos)]

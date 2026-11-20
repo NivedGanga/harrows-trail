@@ -131,3 +131,5 @@ See [docs/roadmap.md](docs/roadmap.md) for the full Sprint 1–11 sequence and p
 This is an active hackathon project. For bugs or implementation work, begin with `AGENTS.md`, the relevant sprint prompt, and the current sprint-status entry. Preserve existing saves, use disposable worlds for tests, and report exactly what was verified—especially whether a check was automated, server-side, player-reported, or graphical.
 
 **Harrow’s Trail is a work in progress.** Its central promise is a family rescue that becomes a question of justice; its remaining work is to make the whole frontier feel as real and playable as that promise.
+
+Sprint 6 bridge checkpoint: an inactive bridge plan near X=500/Z=689 passed `./tests/run-sprint6.sh` (write, read, blocked, modified, modified_read), including missing-anchor and anchor-metadata refusal. Logs: `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.L2RWOG`. The complete mountain route and graphical presentation remain unverified; Sprint 6 is incomplete.
