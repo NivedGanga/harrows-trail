@@ -9,6 +9,16 @@ return function(storage)
  natural_ground['mcl_core:coarse_dirt']=true
  local function key(id) return 'world_site_v1:'..id end
  local function placed(id) return storage:get_string(key(id))=='1' end
+ local function touched(id) return storage:get_string('world_site_touched_v1:'..id)=='1' end
+ local function mark_touched(pos)
+  for id,site in pairs(registry) do
+   local c=site.center; local y=site.base_y
+   if y and not placed(id) and pos.x>=c.x-site.half_x-4 and pos.x<=c.x+site.half_x+4 and
+    pos.z>=c.z-site.half_z-4 and pos.z<=c.z+site.half_z+4 and pos.y>=y-16 and pos.y<=y+site.height+15 then
+    storage:set_string('world_site_touched_v1:'..id,'1')
+   end
+  end
+ end
  local function preflight(site,y,layout,zones)
   if type(site)~='table' or type(y)~='number' or type(layout)~='table' or #layout==0 then return false,'invalid site or layout' end
   local targets={}
@@ -69,6 +79,7 @@ return function(storage)
   local site=registry[id]
   if not site then return false,'unknown site' end
   if placed(id) then return true,'already placed' end
+  if touched(id) then return false,'site area was modified by a player' end
   local ok,reason=preflight(site,y,layout,zones)
   if not ok then return false,reason end
   for _,entry in ipairs(layout) do
@@ -84,5 +95,5 @@ return function(storage)
   storage:set_string(key(id),'1')
   return true,'placed'
  end
- return {registry=registry,preflight=preflight,place=place,placed=placed}
+ return {registry=registry,preflight=preflight,place=place,placed=placed,touched=touched,mark_touched=mark_touched}
 end

@@ -9,7 +9,7 @@ core.register_chatcommand("trail_sites", {
   local out = {}
   for id, site in pairs(world_sites.registry) do
    out[#out+1] = id .. " x=" .. site.center.x .. " z=" .. site.center.z ..
-    " " .. (world_sites.placed(id) and "placed" or "not placed")
+    " " .. (world_sites.placed(id) and "placed" or world_sites.touched(id) and "modified; placement refused" or "not placed")
   end
   table.sort(out)
   return true, table.concat(out, "; ")
@@ -373,7 +373,11 @@ local function ensure_grounded_site(id)
    core.log('action','[harrows_trail] Grounded site placed: '..id)
   end)
 end
-if grounded_mode then apply_grounded_positions() end
+if grounded_mode then
+ apply_grounded_positions()
+ core.register_on_placenode(function(pos) world_sites.mark_touched(pos) end)
+ core.register_on_dignode(function(pos) world_sites.mark_touched(pos) end)
+end
 local function update_grounded(player)
  if not grounded_mode or storage:get_string('site_ready')~='1' then return end
  local pos=player:get_pos(); local target=world_sites.registry.red_mesa.center

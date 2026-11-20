@@ -33,7 +33,7 @@ local function test_world_sites()
  assert(sites.registry.ranch.biome_prefix=='Savanna' and sites.registry.red_mesa.biome_prefix=='Mesa')
  local pos={x=0,y=221,z=4}
  local biome=assert(mcl_biome_dispatch.get_biome_name(pos))
- local site={center={x=0,z=4},half_x=0,half_z=0,height=2,biome_prefix=biome}
+ local site={center={x=0,z=4},half_x=0,half_z=0,height=2,base_y=221,biome_prefix=biome}
  core.set_node({x=0,y=220,z=4},{name='mcl_core:dirt'})
  local layout={{pos=pos,name='harrows_trail:ash'}}
  assert(sites.preflight(site,221,layout))
@@ -78,6 +78,13 @@ local function test_world_sites()
  split[2].pos={x=-1,y=222,z=4}; ok,why=sites.preflight(two,221,split,zones)
  assert(not ok and why:find('outside checked zones',1,true))
  core.set_node({x=1,y=221,z=4},{name='air'})
+ sites.registry.touched_fixture=site
+ sites.mark_touched({x=100,y=221,z=100}); assert(not sites.touched('touched_fixture'))
+ sites.mark_touched(pos); assert(sites.touched('touched_fixture'))
+ ok,why=sites.place('touched_fixture',221,layout); assert(not ok and why:find('modified',1,true))
+ assert(core.get_node(pos).name=='air')
+ api.storage:set_string('world_site_touched_v1:touched_fixture','')
+ sites.registry.touched_fixture=nil
  sites.registry.test_fixture=site
  assert(sites.place('test_fixture',221,layout)); assert(sites.placed('test_fixture'))
  assert(core.get_node(pos).name=='harrows_trail:ash')
