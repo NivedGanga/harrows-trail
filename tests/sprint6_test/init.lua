@@ -30,6 +30,12 @@ local function run(i)
   else
    local ok,reason=api.world_sites.place(id,y,layout,zones);assert(ok,reason)
    for _,e in ipairs(layout) do assert(core.get_node(e.pos).name==e.name,core.pos_to_string(e.pos)) end
+   if id=='gulch_bridge' then
+    for _,z in ipairs({676,702}) do
+     local ground=core.get_node({x=504,y=14,z=z});assert(core.get_item_group(ground.name,'solid')>0,'bridge bank has no landing')
+     for yy=15,18 do assert(core.get_node({x=504,y=yy,z=z}).name=='air','bridge approach blocked') end
+    end
+   end
    api.world_midgame_nodes.ensure_actors(api.world_midgame.sites[id])
    for _,b in ipairs(api.world_midgame.sites[id]) do if b.actor then
     local found=false

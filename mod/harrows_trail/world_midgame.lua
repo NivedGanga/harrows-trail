@@ -35,10 +35,12 @@ local positions={
 local function layout(id)
  local nodes,zones={},{}
  if id=='gulch_bridge' then
-  zones[1]={min={x=498,y=15,z=677},max={x=502,y=18,z=700},bridge_span=true}
-  for x=498,502 do for z=677,700 do
+  zones[1]={min={x=502,y=15,z=677},max={x=506,y=18,z=701},bridge_span=true}
+  zones[2]={min={x=503,y=14,z=702},max={x=505,y=18,z=702}}
+  for x=503,505 do nodes[#nodes+1]={pos={x=x,y=14,z=702},name='mcl_trees:wood_spruce'} end
+  for x=502,506 do for z=677,701 do
    nodes[#nodes+1]={pos={x=x,y=15,z=z},name='mcl_trees:wood_spruce'}
-   if x==498 or x==502 then for y=16,17 do nodes[#nodes+1]={pos={x=x,y=y,z=z},name='mcl_trees:wood_spruce'} end end
+   if x==502 or x==506 then for y=16,17 do nodes[#nodes+1]={pos={x=x,y=y,z=z},name='mcl_trees:wood_spruce'} end end
   end end
   return nodes,zones
  end

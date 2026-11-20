@@ -8,8 +8,8 @@ return function(storage)
   ghost_mine={center={x=560,z=844},radius=64,half_x=2,half_z=14,height=5,biome_prefix='Mesa',base_y=21},
   iron_pass={center={x=-480,z=-516},radius=64,half_x=8,half_z=4,height=10,biome_prefix='ExtremeHills+_snowtop',base_y=53,allow_mountain_ground=true,allow_natural_snow=true},
   silver_spur={center={x=-463,z=-557},radius=64,half_x=5,half_z=11,height=8,biome_prefix='ExtremeHills+',base_y=11},
-  gulch_bridge={center={x=500,z=689},radius=64,half_x=2,half_z=12,height=4,biome_prefix='Desert',base_y=15,
-   bridge_anchors={{x=500,y=14,z=677},{x=500,y=14,z=700}}},
+  gulch_bridge={center={x=504,z=689},radius=64,half_x=2,half_z=13,height=4,biome_prefix='Desert',base_y=15,
+   bridge_anchors={{x=504,y=14,z=677},{x=504,y=14,z=701}}},
  }
  local natural_ground={['mcl_core:dirt_with_grass']=true,['mcl_core:dirt']=true,['mcl_core:sand']=true,['mcl_core:redsand']=true,['mcl_colorblocks:hardened_clay']=true,['mcl_colorblocks:hardened_clay_orange']=true}
  for color in pairs(mcl_dyes.colors) do natural_ground['mcl_colorblocks:hardened_clay_'..color]=true end
