@@ -46,6 +46,12 @@ local function test_world_sites()
  local protect=core.is_protected; core.is_protected=function() return true end
  local protected_ok,protected_reason=sites.preflight(site,221,layout); core.is_protected=protect
  assert(not protected_ok and protected_reason:find('protected',1,true))
+ local unloaded={center={x=10000,z=10000},half_x=0,half_z=0,height=2,biome_prefix=biome}
+ local original_biome=mcl_biome_dispatch.get_biome_name
+ mcl_biome_dispatch.get_biome_name=function() return biome end
+ local loaded_ok,loaded_reason=sites.preflight(unloaded,221,{{pos={x=10000,y=221,z=10000},name='harrows_trail:ash'}})
+ mcl_biome_dispatch.get_biome_name=original_biome
+ assert(not loaded_ok and loaded_reason:find('not loaded',1,true))
  local wrong={center=site.center,half_x=0,half_z=0,height=2,biome_prefix='not_a_biome'}
  local ok,why=sites.preflight(wrong,221,layout); assert(not ok and why:find('unsuitable biome',1,true))
  local upper={x=0,y=222,z=4}

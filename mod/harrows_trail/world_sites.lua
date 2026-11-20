@@ -1,8 +1,8 @@
 -- Safe placement primitives; the legacy elevated sites remain active until migration is complete.
 return function(storage)
  local registry={
-  ranch={center={x=513,z=647},radius=64,half_x=25,half_z=17,height=4,biome_prefix='Savanna'},
-  red_mesa={center={x=623,z=788},radius=64,half_x=11,half_z=2,height=4,biome_prefix='Mesa'},
+  ranch={center={x=654,z=652},radius=64,half_x=18,half_z=16,height=4,biome_prefix='Savanna',base_y=19},
+  red_mesa={center={x=623,z=788},radius=64,half_x=19,half_z=2,height=8,biome_prefix='Mesa',base_y=21},
  }
  local natural_ground={['mcl_core:dirt_with_grass']=true,['mcl_core:dirt']=true,['mcl_core:sand']=true,['mcl_core:redsand']=true,['mcl_colorblocks:hardened_clay']=true,['mcl_colorblocks:hardened_clay_orange']=true}
  for color in pairs(mcl_dyes.colors) do natural_ground['mcl_colorblocks:hardened_clay_'..color]=true end
@@ -71,7 +71,16 @@ return function(storage)
   if placed(id) then return true,'already placed' end
   local ok,reason=preflight(site,y,layout,zones)
   if not ok then return false,reason end
-  for _,entry in ipairs(layout) do core.set_node(entry.pos,{name=entry.name}) end
+  for _,entry in ipairs(layout) do
+   core.set_node(entry.pos,{name=entry.name,param2=entry.param2 or 0})
+   if entry.mirrored then core.get_meta(entry.pos):set_int('is_mirrored',1) end
+  end
+  for _,entry in ipairs(layout) do
+   if entry.text then
+    core.get_meta(entry.pos):set_string('utext',core.serialize(mcl_signs.string_to_ustring(entry.text)))
+    mcl_signs.update_sign(entry.pos)
+   end
+  end
   storage:set_string(key(id),'1')
   return true,'placed'
  end

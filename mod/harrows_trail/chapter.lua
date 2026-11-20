@@ -154,7 +154,7 @@ local function interact(kind,pos,p,s)
   end
  elseif kind=='dust' then
   if not s.flags.jesse_briefed then message(p,'Dust Road','Speak to Jesse after posting bail first.')
-  else prompt(p,'dust',gates[4].text..' Crossing starts at night; you may wait safely here. Exposed: one marker, gale slows travel. Sheltered: two markers via the northern shelters, no wind penalty. No deadline.','exposed_route;Exposed route','sheltered_route;Sheltered route') end
+  else prompt(p,'dust',gates[4].text..' Crossing starts at night; you may wait safely here. Exposed: one marker, gale slows travel. Sheltered: two markers via the northern shelters, no wind penalty. No deadline.'..(ctx.grounded and ' Use /stagecoach here to return to Red Mesa.' or ''),'exposed_route;Exposed route','sheltered_route;Sheltered route') end
  elseif kind=='exposed' or kind=='shelter1' or kind=='shelter2' then
   if not s.unlocked['4'] then message(p,'Unlit trail','Your lanterns will reveal these trail signs after you prepare at the Dust Road.')
   elseif s.flags.route=='exposed' and kind=='exposed' then
@@ -224,7 +224,10 @@ local function ensure()
    -- Two traversable branches, with a connecting plaza at either end.
    if x<75 or x>115 or math.abs(z)<=3 or z>=15 and z<=21 then add(x,220,z,'harrows_trail:floor') end
   end end
-  for k,p in pairs(positions) do if k~='ada' and not more[k] then add(p.x,p.y,p.z,'harrows_trail:'..k) end end
+  local grounded_opening={recovery=true,delivery=true,depot=true,jesse=true,cache=true,ruth=true}
+  for k,p in pairs(positions) do
+   if k~='ada' and not more[k] and not (ctx.grounded and grounded_opening[k]) then add(p.x,p.y,p.z,'harrows_trail:'..k) end
+  end
   for _,x in ipairs({80,105}) do for z=15,21 do add(x,224,z,'harrows_trail:adobe') end end
   for _,e in ipairs(layout) do local n=core.get_node(e.pos).name; if n~='air' and n~=e.name then core.log('error','[harrows_trail] Chapter site occupied; preserved'); building=false; return end end
   for _,e in ipairs(layout) do core.set_node(e.pos,{name=e.name}); core.get_meta(e.pos):set_string('infotext',e.name..' (right-click)') end

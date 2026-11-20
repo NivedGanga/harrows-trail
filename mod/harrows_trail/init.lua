@@ -81,6 +81,7 @@ horse_def.on_die = function(horse, ...)
 	if native_horse_death then return native_horse_death(horse, ...) end
 end
 local chapter
+local grounded_mode
 local function journal(s)
 	if chapter and s.flags.choice then return chapter.journal(s) end
 	if s.flags.choice then
@@ -88,13 +89,13 @@ local function journal(s)
 	elseif s.flags.reached_mesa then
 		return "Meet Sheriff Ada at the Red Mesa office and decide what to do with the witness's evidence."
 	elseif not s.map_fragments['1'] then
-		return "Search the burned ranch: the barn marker is west of where you woke. Right-click it to examine Nora's trail."
+		return grounded_mode and "Search the burned barn near the tack room for Nora's trail." or "Search the burned ranch: the barn marker is west of where you woke. Right-click it to examine Nora's trail."
 	elseif not s.flags.saddle_found then
 		return "Find Samuel's saddle at the tack room marker. The tracks lead east to Red Mesa."
 	elseif not s.unlocked['2'] then
-		return "Tame a horse by mounting it with an empty hand until it accepts you. Fit Samuel's saddle, mount, and follow the eastward trail marker."
+		return grounded_mode and "Tame a horse at the corral with an empty hand, fit Samuel's saddle, and ride toward Red Mesa." or "Tame a horse by mounting it with an empty hand until it accepts you. Fit Samuel's saddle, mount, and follow the eastward trail marker."
 	else
-		return "Ride east to Red Mesa and speak with Sheriff Ada."
+		return "Ride to Red Mesa and speak with Sheriff Ada at the office."
 	end
 end
 local function show(name, title, message, buttons)
@@ -121,6 +122,10 @@ local function interact(kind, pos, player)
 	local s = states[name]
 	if not s then return end
 	if chapter and chapter.interact(kind, pos, player, s) then return end
+	if kind == "stagecoach" then
+		message(player, "Stagecoach desk", "After Jesse explains the route, use /stagecoach near this desk to travel to the temporary Dust Road and use it there to return. Your mounted native horse can travel with you.")
+		return
+	end
 	if kind == "barn" then
 		if not s.map_fragments['1'] then
 			local inv = player:get_inventory()
@@ -132,7 +137,7 @@ local function interact(kind, pos, player)
 		s.map_fragments['1'] = true
 		s.flags.ranch_clue = true
 		save(name)
-		message(player, "The burned barn", "In the ashes is a torn piece of Samuel's map. Nearby, Nora's ribbon lies beside boot prints and a note: Crane took her east toward Red Mesa. Find the tack room and Samuel's saddle. Use /trail for your journal.")
+		message(player, "The burned barn", "In the ashes is a torn piece of Samuel's map. Nearby, Nora's ribbon lies beside boot prints and a note: Crane took her toward Red Mesa. Find the tack room and Samuel's saddle. Use /trail for your journal.")
 	elseif kind == "tack" then
 		local inv = player:get_inventory()
 		starter.clean(inv)
@@ -173,6 +178,7 @@ local function interact(kind, pos, player)
 		for _, nearby in ipairs(core.get_objects_inside_radius(p, 12)) do
 			local mob = nearby:get_luaentity()
 			if mob and mob.name == "mobs_mc:horse" then
+				s.flags.corral_visited=true; save(name)
 				message(player, "Ranch corral", "A horse is already nearby. Mount with an empty hand until it accepts you, then fit the saddle.")
 				return
 			end
@@ -181,6 +187,7 @@ local function interact(kind, pos, player)
 		if obj then
 			local horse = obj:get_luaentity()
 			horse.persistent = true
+			s.flags.corral_visited=true; save(name)
 			message(player, "Ranch corral", "A horse approaches. With an empty hand, right-click to mount; keep trying until it accepts you. Dismount and right-click with the saddle, then mount again.")
 		else
 			message(player, "Ranch corral", "No horse could reach the corral. Try again when the area is clear.")
@@ -195,11 +202,11 @@ local function interact(kind, pos, player)
 		else
 			chapter.unlock(player, s, 2)
 			save(name)
-			message(player, "Eastward trail", "The tracks continue east to Red Mesa. Samuel's saddle stays with your horse. Find Ada at the office marker.")
+			message(player, "Eastward trail", "The tracks continue to Red Mesa. Samuel's saddle stays with your horse. Find Ada at the office marker.")
 		end
 	elseif kind == "ada" then
 		if not s.unlocked['2'] then
-			message(player, "Sheriff Ada Wells", "Follow Nora's trail from the ranch and ride a tamed, saddled horse past the eastward trail marker first.")
+			message(player, "Sheriff Ada Wells", grounded_mode and "Follow Nora's trail from the ranch and ride a tamed, saddled horse to Red Mesa first." or "Follow Nora's trail from the ranch and ride a tamed, saddled horse past the eastward trail marker first.")
 			return
 		end
 		s.flags.reached_mesa = true
@@ -213,6 +220,7 @@ local function interact(kind, pos, player)
 		save(name)
 	end
 end
+local world_opening = dofile(core.get_modpath("harrows_trail") .. "/world_opening.lua")(interact)
 core.register_craftitem("harrows_trail:fragment_1", {
 	description = "Samuel's map fragment 1",
 	inventory_image = "default_paper.png",
@@ -252,6 +260,8 @@ end
 core.register_on_player_receive_fields(receive_fields)
 
 -- The temporary slice is elevated so it does not flatten generated terrain.
+grounded_mode = storage:get_string('grounded_v1') == '1' or
+ (core.settings:get_bool('harrows_trail_grounded',false) and storage:get_string('site_ready') ~= '1')
 local site = {
 	spawn = {x = 0, y = 222, z = 3},
 	barn = {x = -8, y = 221, z = 0}, tack = {x = 0, y = 221, z = -6},
@@ -306,6 +316,72 @@ core.register_node("harrows_trail:adobe", {
 	groups = {unbreakable = 1, not_in_creative_inventory = 1}, diggable = false,
 })
 
+local ground_busy, ground_retry, ground_error = {}, {}, {}
+local function apply_grounded_positions()
+ local positions=world_buildings.positions
+ for _,key in ipairs({'spawn','barn','tack','corral','route','ada'}) do site[key]=positions[key] end
+ if chapter then
+  for _,key in ipairs({'ada','jesse','ruth','cache','delivery','depot'}) do chapter.positions[key]=positions[key] end
+  chapter.positions.recovery=positions.tack
+ end
+end
+local function ensure_grounded_site(id)
+ if not grounded_mode or ground_busy[id] then return end
+ local def=world_sites.registry[id]; local y=def and def.base_y
+ if not def or world_sites.placed(id) and (id~='ranch' or storage:get_string('site_ready')=='1') then return end
+ if not world_sites.placed(id) and core.get_mapgen_setting('seed')~='1730940739604968791' then
+  if ground_error[id]~='seed' then
+   ground_error[id]='seed'; core.log('error','[harrows_trail] Grounded sites require the documented development seed; no blocks changed')
+   for _,p in ipairs(core.get_connected_players()) do core.chat_send_player(p:get_player_name(),'This world seed is unsuitable for the grounded sites; no blocks were changed.') end
+  end
+  return
+ end
+ if (ground_retry[id] or 0)>core.get_gametime() then return end
+ ground_busy[id]=true
+ local p=def.center
+ core.emerge_area({x=p.x-def.half_x-48,y=y-48,z=p.z-def.half_z-48},
+  {x=p.x+def.half_x+48,y=y+def.height+48,z=p.z+def.half_z+48},function(_,action,left)
+   if action==core.EMERGE_ERRORED or action==core.EMERGE_CANCELLED then
+    ground_busy[id]=nil; ground_retry[id]=core.get_gametime()+15; return
+   end
+   if left~=0 then return end
+   local layout,zones=world_buildings.layout(id)
+   local ok,reason=world_sites.place(id,y,layout,zones)
+   ground_busy[id]=nil
+   if not ok then
+    ground_retry[id]=core.get_gametime()+15
+    core.log('warning','[harrows_trail] Grounded site '..id..' not placed: '..tostring(reason))
+    if ground_error[id]~=reason then
+     ground_error[id]=reason
+     for _,player in ipairs(core.get_connected_players()) do
+      core.chat_send_player(player:get_player_name(),'The '..id..' site cannot be placed safely. No blocks were changed; see the server log.')
+     end
+    end
+    return
+   end
+   apply_grounded_positions()
+   if id=='ranch' then
+    storage:set_string('grounded_v1','1'); storage:set_string('site',core.write_json(site)); storage:set_string('site_ready','1')
+    for _,player in ipairs(core.get_connected_players()) do
+     local name=player:get_player_name(); local s=states[name]
+     if s and s.flags.start_pending then
+      player:set_pos(site.spawn); s.flags.start_pending=nil; save(name)
+      core.chat_send_player(name,"Search the burned barn for Nora's trail. Use /trail for your journal.")
+     end
+    end
+   end
+   core.log('action','[harrows_trail] Grounded site placed: '..id)
+  end)
+end
+if grounded_mode then apply_grounded_positions() end
+local function update_grounded(player)
+ if not grounded_mode or storage:get_string('site_ready')~='1' then return end
+ local pos=player:get_pos(); local target=world_sites.registry.red_mesa.center
+ local distance2=(pos.x-target.x)^2+(pos.z-target.z)^2
+ if world_sites.placed('red_mesa') then
+  if distance2<=96^2 then world_opening.ensure_actors(world_buildings.sites.red_mesa) end
+ elseif distance2<=world_sites.registry.red_mesa.radius^2 then ensure_grounded_site('red_mesa') end
+end
 local building = false
 local function ensure_site()
 	if storage:get_string("site_ready") == "1" or building then return end
@@ -369,7 +445,7 @@ core.register_on_joinplayer(function(player)
 			end
 		end)
 	else
-		ensure_site()
+		if grounded_mode then ensure_grounded_site('ranch') else ensure_site() end
 	end
 end)
 core.register_on_leaveplayer(function(player)
@@ -390,14 +466,51 @@ core.register_on_respawnplayer(function(player)
 	end
 end)
 
+local function advance_ranch_route(player,s)
+ local route=world_buildings.route; local step=tonumber(s.flags.ranch_route_step) or 1
+ step=math.max(1,math.min(#route,math.floor(step)))
+ local target=route[step]; local pos=player:get_pos()
+ if step<#route and is_riding(player) and (pos.x-target.x)^2+(pos.z-target.z)^2<=4 and math.abs(pos.y-target.y)<=4 then
+  step=step+1; s.flags.ranch_route_step=step; save(player:get_player_name())
+ end
+ return route[step]
+end
+local function opening_target(player,s)
+ if not s.map_fragments['1'] then return 'Burned barn',site.barn end
+ if not s.flags.saddle_found then return 'Tack room',site.tack end
+ if not s.flags.corral_visited and not s.unlocked['2'] then return 'Ranch corral',site.corral end
+ if not s.unlocked['2'] then return 'Trail to Red Mesa',advance_ranch_route(player,s) end
+ if not s.flags.choice then return 'Sheriff Ada',site.ada end
+ if s.flags.jesse_free and not s.flags.jesse_briefed then return 'Jesse at the jail',world_buildings.positions.jesse end
+ if s.flags.jesse_briefed and not s.unlocked['4'] and player:get_pos().x>400 then
+  if player:get_inventory():contains_item('main','mcl_lanterns:lantern_floor 4') then return 'Stagecoach desk',world_buildings.positions.stagecoach end
+  return 'Ruth: lanterns',world_buildings.positions.ruth
+ end
+end
 local elapsed = 0
+local opening_huds = {}
+core.register_on_leaveplayer(function(p) opening_huds[p:get_player_name()]=nil end)
 core.register_globalstep(function(dtime)
 	elapsed = elapsed + dtime
 	if elapsed < 1 then return end
 	elapsed = 0
-	if storage:get_string("site_ready") ~= "1" then return end
+	if storage:get_string("site_ready") ~= "1" then
+		if grounded_mode and #core.get_connected_players()>0 then ensure_grounded_site('ranch') end
+		return
+	end
 	for _, player in ipairs(core.get_connected_players()) do
-		local s = states[player:get_player_name()]
+		update_grounded(player)
+		local name=player:get_player_name(); local s = states[name]
+		if grounded_mode and s then
+			local label,target=opening_target(player,s)
+			local signature=target and label..':'..target.x..':'..target.y..':'..target.z
+			local previous=opening_huds[name]
+			if previous and previous.signature~=signature then player:hud_remove(previous.id); opening_huds[name]=nil end
+			if label and not opening_huds[name] then
+				local id=player:hud_add({hud_elem_type='waypoint',name=label,text='m',number=0xffd080,world_pos=target})
+				if id then opening_huds[name]={id=id,signature=signature} end
+			end
+		end
 		if s and not s.unlocked['2'] and vector.distance(player:get_pos(), site.route) < 5 and is_riding(player) then
 			interact("route", site.route, player)
 		end
@@ -407,13 +520,18 @@ end)
 if core.settings:get_bool("harrows_trail_test", false) then
 	harrows_trail_test = {states = states, load = load, save = save, interact = interact,
 		receive_fields = receive_fields, journal = journal, is_riding = is_riding,
-		ensure_site = ensure_site, site = site, storage = storage, world_sites = world_sites, world_buildings = world_buildings,
+		ensure_site = ensure_site, ensure_grounded_site = ensure_grounded_site, update_grounded = update_grounded, advance_ranch_route = advance_ranch_route, opening_target = opening_target, grounded_mode = grounded_mode, site = site, storage = storage, world_sites = world_sites, world_buildings = world_buildings, world_opening = world_opening,
 		grant = grant, starter = starter, recover_horse_saddle = recover_horse_saddle, deliver_saddles = deliver_saddles}
 end
 
 chapter = dofile(core.get_modpath("harrows_trail") .. "/chapter.lua")({
- states=states, save=save, storage=storage, message=message, grant=grant, riding=is_riding, recover=function(p) interact("tack", {x=0,y=221,z=-6}, p) end})
+ states=states, save=save, storage=storage, message=message, grant=grant, riding=is_riding, grounded=grounded_mode, recover=function(p) interact("tack", site.tack, p) end})
 if core.settings:get_bool("harrows_trail_test", false) then harrows_trail_test.chapter = chapter end
+if grounded_mode then apply_grounded_positions() end
+local world_travel = dofile(core.get_modpath("harrows_trail") .. "/world_travel.lua")({
+ grounded=grounded_mode,states=states,storage=storage,riding=is_riding,
+ desk=world_buildings.positions.stagecoach,dust_marker=chapter.positions.dust})
+if core.settings:get_bool("harrows_trail_test", false) then harrows_trail_test.world_travel=world_travel end
 
 local finale = dofile(core.get_modpath("harrows_trail") .. "/finale.lua")({
  states=states, save=save, storage=storage, message=message, grant=grant, chapter=chapter})
