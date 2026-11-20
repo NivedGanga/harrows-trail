@@ -39,6 +39,21 @@ local function epilogue(s)
  local trust=s.nora_trust>=60 and ' Nora trusts Eli’s word and hopes they can build a future together.' or ' Nora remains uncertain of Eli’s choices and needs time to trust him.'
  return t..gold..trust
 end
+local function scene(s)
+ local model='mcl_armor_character.b3d;character.png;0,180;false;false;0,0]'
+ local eli='model[0.6,1;1.5,3;eli;'..model
+ local nora='model[2.2,1;1.5,3;nora;'..model
+ if s.verdict=='justice' then
+  return 'label[0.4,0.3;Red Mesa courthouse: Ada reads the verdict]'..eli..nora..
+   'model[4.1,1;1.5,3;ada;'..model..'model[5.8,1;1.5,3;crane;'..model
+ end
+ local horse='mobs_mc_horse.b3d;blank.png,mobs_mc_horse_brown.png,blank.png;0,180;false;false;0,0]'
+ if s.verdict=='mercy' then
+  return 'label[0.4,0.3;Eli and Nora take the trail home]'..eli..nora..
+   'model[4,1;2,3;horse1;'..horse..'model[6,1;2,3;horse2;'..horse
+ end
+ return 'label[0.4,0.3;Eli rides alone under a red sky]'..eli..'model[3,1;3,3;horse;'..horse
+end
 local function interact(kind,p,s)
  local f=s.flags
  if kind=='gate' then
@@ -80,8 +95,7 @@ local function interact(kind,p,s)
   if not s.verdict or s.verdict=='' then return show(p,kind,'Epilogue','Decide Crane’s verdict first.') end
   if f.gold_found and not f.gold_choice then return show(p,kind,'The recovered cache','What should become of the remaining cache? This choice is independent of the verdict.',{{'railroad','Return to railroad'},{'keep_gold','Keep the gold'},{'ranch','Rebuild ranch'}}) end
   pending[p:get_player_name()]=kind
-  local cast=s.verdict=='vengeance' and 'label[6.4,4.3;Eli rides alone]' or 'model[7.2,1.5;1.5,2.5;nora;mcl_armor_character.b3d;character.png;0,180;false;false;0,0]label[6.3,4.3;Eli and Nora]'
-  core.show_formspec(p:get_player_name(),'harrows_trail:finale','formspec_version[4]size[10,6]label[0.5,0.4;Epilogue]textarea[0.5,1;5.7,3.8;;;'..core.formspec_escape(epilogue(s))..']model[6,1.5;1.5,2.5;eli;mcl_armor_character.b3d;character.png;0,180;false;false;0,0]'..cast..'button_exit[3.5,5;3,0.7;close;Close]')
+  core.show_formspec(p:get_player_name(),'harrows_trail:finale','formspec_version[4]size[10,6]label[0.5,0.4;Epilogue]textarea[0.5,1;9,3.8;;;'..core.formspec_escape(epilogue(s))..']button[2,5;3,0.7;scene;See final scene]button_exit[5.2,5;3,0.7;close;Close]')
   return
  end
 end
@@ -91,6 +105,10 @@ local function receive(p,form,fields)
  if not kind or not s or vector.distance(p:get_pos(),positions[kind])>8 then return end
  pending[name]=nil
  local f=s.flags; local inv=p:get_inventory()
+ if kind=='ending' and fields.scene and s.verdict and s.verdict~='' then
+  core.show_formspec(name,'harrows_trail:finale','formspec_version[4]size[9,6]'..scene(s)..'button_exit[3,5;3,0.7;close;Close]')
+  return
+ end
  if kind=='gate' and fields.start and f.ledger2 and not s.unlocked['9'] then
   if chapter.unlock(p,s,9) then save(name); return show(p,kind,'Widowmaker Tunnel','Four apples handed over once. Your duster and crossbow remain yours. Meet Mercer east.') end
   local missing={}; if not inv:contains_item('main','mcl_core:apple_gold 4') then missing[#missing+1]='four golden apples' end
@@ -125,7 +143,7 @@ local function receive(p,form,fields)
   end
  elseif kind=='verdict' and f.crane_outcome and (not s.verdict or s.verdict=='') then
   local j,m=reasons(s)
-  if fields.justice and #j==0 then s.verdict='justice'
+  if fields.justice and #j==0 then s.verdict='justice'; s.honor=math.min(100,s.honor+5)
   elseif fields.mercy and #m==0 then s.verdict='mercy'; f.crane_outcome='released'
   elseif fields.vengeance then s.verdict='vengeance'; if f.crane_outcome~='killed' and not f.crane_trust_lost then s.nora_trust=math.max(0,s.nora_trust-5); f.crane_trust_lost=true end; f.crane_outcome='killed'; s.wanted=math.min(4,(s.wanted or 0)+1) end
   if s.verdict then s.unlocked['10']=true; s.act=10 end
@@ -240,5 +258,5 @@ local function ensure()
  end)
 end
 core.register_on_joinplayer(ensure)
-return {positions=positions,interact=interact,receive=receive,journal=journal,reasons=reasons,epilogue=epilogue,ensure=ensure}
+return {positions=positions,interact=interact,receive=receive,journal=journal,reasons=reasons,epilogue=epilogue,scene=scene,ensure=ensure}
 end

@@ -58,6 +58,8 @@ return function(api)
   use('verdict'); assert(form:find('Mercy: locked',1,true)); assert(form:find('standing',1,true) or form:find('trust in town',1,true))
   local j,m=finale.reasons(s); assert((#j==0)==(outcome=='captured')); if outcome=='killed' then assert(#m>0) end
   use('verdict',{justice=true}); assert((s.verdict=='justice')==(outcome=='captured'))
+  assert(s.honor==(outcome=='captured' and 55 or 50))
+  if outcome=='captured' then use('verdict',{justice=true}); assert(s.honor==55) end
   s.verdict=nil; use('verdict',{vengeance=true}); assert(s.verdict=='vengeance' and s.flags.crane_outcome=='killed')
  end
  for _,choice in ipairs({'release','kill_crane'}) do
@@ -69,6 +71,10 @@ return function(api)
   if choice=='kill_crane' then assert(form:find('Crane is dead',1,true)) end
  end
  s.flags.gold_choice='railroad'; assert(finale.epilogue(s):find('railroad',1,true)); s.flags.gold_choice='keep'; assert(finale.epilogue(s):find('rough reputation',1,true))
+ for _,v in ipairs({'justice','mercy','vengeance'}) do
+  s.verdict=v; s.flags.gold_found=false; use('ending',{scene=true}); local view=form; assert(view:find('model[',1,true))
+  if v=='justice' then assert(view:find('ada;',1,true) and view:find('crane;',1,true)) else assert(view:find('mobs_mc_horse.b3d',1,true)) end
+ end
  -- Exercise the duel callback without requiring a connected graphical client.
  s=api.load('duel_test'); api.states.finale_test=s; s.unlocked['9']=true
  p.pos=finale.positions.mercer
