@@ -208,3 +208,8 @@ A fresh disposable copy `.local/playcheck.BykoGy` was launched with Luanti 5.17.
 
 - Added a preliminary Mesa construction plan near X=560/Z=844 with separate entrance, tracks and office interaction fixtures. It passes the safe placement checks in the pinned seed but is not connected to the chapter, is not a completed mine, and has not been checked for a playable route or appearance. Iron Pass and Silver Spur still need sites.
 - `./tests/run-sprint6.sh` PASS: write, read, blocked, modified and modified_read for all three construction plans. Logs: `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.sz0Wsp`. No graphical or connected-player check was performed.
+
+### Sprint 6 snowy-terrain preflight (2026-11-21)
+
+- Added an explicitly opted-in preflight allowance for a natural single-layer snow node at a construction target, and for snowy grass or stone as ground. Normal sites retain their earlier rules. Protection, metadata, timers, objects and touched-site checks still apply. No active site uses this allowance yet; existing worlds must not be migrated into new footprints without a safe version policy.
+- `./tests/run-sprint1.sh` PASS: write, read, occupied-site and survey phases, including refusal of snow by default, explicit opt-in, and refusal of snow with metadata. Logs: `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint1.p5dID1`. A disposable terrain survey found snowy ledges around X=-486/Z=-516; their access from Dry Gulch and suitability for a finished site remain unverified. No graphical gameplay was performed.

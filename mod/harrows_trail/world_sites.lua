@@ -28,7 +28,7 @@ return function(storage)
   for _,entry in ipairs(layout) do
    local p=entry.pos
    if type(p)~='table' or type(entry.name)~='string' or not core.registered_nodes[entry.name] then return false,'invalid layout node' end
-   local k=core.pos_to_string(p); if targets[k] then return false,'duplicate layout node' end; targets[k]=true
+   local k=core.pos_to_string(p); if targets[k] then return false,'duplicate layout node' end; targets[k]=entry
   end
   local center={x=site.center.x,y=y,z=site.center.z}
   local biome=mcl_biome_dispatch.get_biome_name(center)
@@ -56,10 +56,13 @@ return function(storage)
    if #core.get_objects_in_area(area_min,area_max)>0 then return false,'object in site' end
    for x=a.x,b.x do for z=a.z,b.z do
     local ground=core.get_node_or_nil({x=x,y=a.y-1,z=z})
-    if not ground or not natural_ground[ground.name] or core.get_item_group(ground.name,'solid')==0 then return false,'missing, uneven, or non-natural ground' end
+    local mountain_ground=ground and site.allow_mountain_ground and (ground.name=='mcl_core:dirt_with_grass_snow' or ground.name=='mcl_core:stone')
+    if not ground or not (natural_ground[ground.name] or mountain_ground) or core.get_item_group(ground.name,'solid')==0 then return false,'missing, uneven, or non-natural ground' end
     for yy=a.y,b.y do
      local pos={x=x,y=yy,z=z}; local node=core.get_node_or_nil(pos)
-     if not node or (node.name~='air' and (node.name~='mcl_flowers:tallgrass' or targets[core.pos_to_string(pos)])) then return false,'occupied or unloaded: '..core.pos_to_string(pos) end
+     local target=targets[core.pos_to_string(pos)]
+     local allowed_snow=node and node.name=='mcl_core:snow' and yy==a.y and site.allow_natural_snow and target and target.replace_natural_snow==true
+     if not node or (node.name~='air' and not allowed_snow and (node.name~='mcl_flowers:tallgrass' or target)) then return false,'occupied or unloaded: '..core.pos_to_string(pos) end
      if core.is_protected(pos,'') then return false,'protected: '..core.pos_to_string(pos) end
      local meta=core.get_meta(pos):to_table()
      if meta and (next(meta.fields or {}) or next(meta.inventory or {})) then return false,'metadata present: '..core.pos_to_string(pos) end
