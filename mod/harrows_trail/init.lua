@@ -363,6 +363,12 @@ local function ensure_grounded_site(id)
    end
    apply_grounded_positions()
    if id=='ranch' then
+    -- Existing grounded and prototype worlds retain their original layout.
+    -- Tag a genuinely new world before publishing its ready flag, so later
+    -- placement can opt in without retroactively claiming old terrain.
+    if storage:get_string('world_layout_version')=='' and storage:get_string('grounded_v1')~='1' and storage:get_string('site_ready')~='1' then
+     storage:set_string('world_layout_version','6')
+    end
     storage:set_string('grounded_v1','1'); storage:set_string('site',core.write_json(site)); storage:set_string('site_ready','1')
     for _,player in ipairs(core.get_connected_players()) do
      local name=player:get_player_name(); local s=states[name]

@@ -3,9 +3,10 @@ set -eu
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 engine="$project_dir/.local/luanti.app/Contents/MacOS/luanti"
 test_dir=$(mktemp -d "${TMPDIR:-/tmp}/harrows-sprint5.XXXXXX")
-for phase in fresh integration integration_read dynamic bad_seed write read blocked legacy_write legacy_read; do
- if [ "$phase" = blocked ]; then world_dir="$test_dir/blocked-world"; elif [ "$phase" = dynamic ]; then world_dir="$test_dir/dynamic-world"; elif [ "$phase" = bad_seed ]; then world_dir="$test_dir/bad-seed-world"; elif [ "$phase" = legacy_write ] || [ "$phase" = legacy_read ]; then world_dir="$test_dir/legacy-world"; elif [ "$phase" = fresh ] || [ "$phase" = integration ] || [ "$phase" = integration_read ]; then world_dir="$test_dir/fresh-world"; else world_dir="$test_dir/world"; fi
- if [ "$phase" != read ] && [ "$phase" != integration ] && [ "$phase" != integration_read ] && [ "$phase" != legacy_read ]; then
+for phase in fresh integration integration_read legacy_grounded_write legacy_grounded_read dynamic bad_seed write read blocked legacy_write legacy_read; do
+ if [ "$phase" = blocked ]; then world_dir="$test_dir/blocked-world"; elif [ "$phase" = dynamic ]; then world_dir="$test_dir/dynamic-world"; elif [ "$phase" = bad_seed ]; then world_dir="$test_dir/bad-seed-world"; elif [ "$phase" = legacy_grounded_write ] || [ "$phase" = legacy_grounded_read ]; then world_dir="$test_dir/legacy-grounded-world"; elif [ "$phase" = legacy_write ] || [ "$phase" = legacy_read ]; then world_dir="$test_dir/legacy-world"; elif [ "$phase" = fresh ] || [ "$phase" = integration ] || [ "$phase" = integration_read ]; then world_dir="$test_dir/fresh-world"; else world_dir="$test_dir/world"; fi
+ if [ "$phase" = legacy_grounded_write ]; then cp -R "$test_dir/fresh-world" "$world_dir"; fi
+ if [ "$phase" != read ] && [ "$phase" != integration ] && [ "$phase" != integration_read ] && [ "$phase" != legacy_read ] && [ "$phase" != legacy_grounded_write ] && [ "$phase" != legacy_grounded_read ]; then
   mkdir -p "$world_dir/worldmods"
   if [ "$phase" = fresh ] || [ "$phase" = dynamic ] || [ "$phase" = bad_seed ]; then
    printf 'gameid = mineclonia\nbackend = sqlite3\nplayer_backend = files\nauth_backend = files\n' > "$world_dir/world.mt"

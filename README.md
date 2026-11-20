@@ -130,3 +130,5 @@ An inactive Iron Pass construction plan also passed `./tests/run-sprint6.sh` (wr
 Preliminary Silver Spur construction data has been added but is also inactive and unfinished. The latest `./tests/run-sprint6.sh` passed all five phases for the five planned site groups; logs are in `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.mD8ckV`. No mountain route or graphical playthrough was verified.
 
 A disposable server terrain survey found a narrow approach between the preliminary mountain sites but did not establish horse-width access to Iron Pass or a route from Dry Gulch; see `docs/sprint-status.md` for the evidence and limitations.
+
+New grounded worlds record a layout version for future safe site activation. Existing unversioned grounded and marker-era worlds keep their previous layout. `./tests/run-sprint5.sh` passed its 12 phases including old grounded-world restart and saved progress (logs `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint5.86ZfZl`); this does not yet activate the mid-game plans.
