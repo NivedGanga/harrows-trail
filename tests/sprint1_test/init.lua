@@ -64,6 +64,7 @@ local function test_world_sites()
  layout[1].replace_natural_snow=true; assert(not sites.preflight(site,221,layout))
  site.allow_natural_snow=true; assert(sites.preflight(site,221,layout)); assert(core.get_node(pos).name=='mcl_core:snow')
  core.get_meta(pos):set_string('owner','test'); assert(not sites.preflight(site,221,layout)); core.get_meta(pos):set_string('owner','')
+ assert(sites.preflight(site,221,{{pos=upper,name='harrows_trail:ash'}})); assert(core.get_node(pos).name=='mcl_core:snow')
  layout[1].replace_natural_snow=nil; site.allow_natural_snow=nil
  core.set_node(pos,{name='air'})
  core.set_node(pos,{name='mcl_core:obsidian'})

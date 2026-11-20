@@ -6,6 +6,7 @@ return function(storage)
   dust_flats={center={x=642,z=1024},radius=80,half_x=26,half_z=16,height=5,biome_prefix='Desert',base_y=11},
   dry_gulch={center={x=523,z=1212},radius=64,half_x=15,half_z=9,height=9,biome_prefix='Plains',base_y=8},
   ghost_mine={center={x=560,z=844},radius=64,half_x=2,half_z=14,height=5,biome_prefix='Mesa',base_y=21},
+  iron_pass={center={x=-480,z=-516},radius=64,half_x=8,half_z=4,height=10,biome_prefix='ExtremeHills+_snowtop',base_y=53,allow_mountain_ground=true,allow_natural_snow=true},
  }
  local natural_ground={['mcl_core:dirt_with_grass']=true,['mcl_core:dirt']=true,['mcl_core:sand']=true,['mcl_core:redsand']=true,['mcl_colorblocks:hardened_clay']=true,['mcl_colorblocks:hardened_clay_orange']=true}
  for color in pairs(mcl_dyes.colors) do natural_ground['mcl_colorblocks:hardened_clay_'..color]=true end
@@ -61,7 +62,7 @@ return function(storage)
     for yy=a.y,b.y do
      local pos={x=x,y=yy,z=z}; local node=core.get_node_or_nil(pos)
      local target=targets[core.pos_to_string(pos)]
-     local allowed_snow=node and node.name=='mcl_core:snow' and yy==a.y and site.allow_natural_snow and target and target.replace_natural_snow==true
+     local allowed_snow=node and node.name=='mcl_core:snow' and yy==a.y and site.allow_natural_snow and (not target or target.replace_natural_snow==true)
      if not node or (node.name~='air' and not allowed_snow and (node.name~='mcl_flowers:tallgrass' or target)) then return false,'occupied or unloaded: '..core.pos_to_string(pos) end
      if core.is_protected(pos,'') then return false,'protected: '..core.pos_to_string(pos) end
      local meta=core.get_meta(pos):to_table()

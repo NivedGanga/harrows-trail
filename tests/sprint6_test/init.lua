@@ -1,6 +1,6 @@
 local api=assert(harrows_trail_test)
 local phase=assert(core.settings:get('harrows_sprint6_phase'))
-local jobs={'dust_flats','dry_gulch','ghost_mine'}
+local jobs={'dust_flats','dry_gulch','ghost_mine','iron_pass'}
 local function finish()
  core.log('action','[sprint6_test] PASS '..phase)
  core.request_shutdown('Sprint 6 test complete',false,0)
@@ -13,7 +13,7 @@ local function run(i)
   assert(action~=core.EMERGE_ERRORED and action~=core.EMERGE_CANCELLED);if left~=0 then return end
   local layout,zones=api.world_midgame.layout(id);assert(#layout>0 and #zones>0)
   if phase=='blocked' then
-   local target=layout[1].pos;assert(core.get_node(target).name=='air')
+   local target=layout[1].pos;assert(core.get_node(target).name=='air' or core.get_node(target).name=='mcl_core:snow')
    core.set_node(target,{name='mcl_core:obsidian'})
    local ok=api.world_sites.place(id,y,layout,zones)
    assert(not ok and not api.world_sites.placed(id) and core.get_node(target).name=='mcl_core:obsidian')

@@ -17,6 +17,7 @@ local sites={
   {name='tracks',pos={x=560,y=21,z=840},half=1,material='mcl_trees:wood_spruce',open=true,fixture='mine_clue'},
   {name='office',pos={x=560,y=20,z=856},half=1,material='mcl_trees:wood_spruce',fixture='ledger1'},
  },
+ iron_pass={},
 }
 local positions={
  dust={x=642,y=11,z=1012},exposed={x=658,y=11,z=1024},
@@ -26,6 +27,29 @@ local positions={
 }
 local function layout(id)
  local nodes,zones={},{}
+ if id=='iron_pass' then
+  local spans={
+   {x=-486,z=-516,roof=57,kind='pass',heights={{52,52,52,52,52},{53,52,52,52,52},{53,53,53,53,53},{53,53,53,53,53},{53,53,53,52,52}}},
+   {x=-480,z=-514,roof=58,kind='rubble1',heights={{53,53,53,54,54},{53,53,54,54,54},{53,53,54,54,54},{53,53,54,54,54},{53,53,54,54,54}}},
+   {x=-474,z=-516,roof=59,kind='rubble2',heights={{54,54,54,54,54},{54,54,54,54,54},{54,54,54,54,55},{54,54,55,55,55},{55,55,55,55,55}}},
+  }
+  for _,span in ipairs(spans) do
+   for dz=-2,2 do for dx=-2,2 do
+    local y=span.heights[dz+3][dx+3];local x,z=span.x+dx,span.z+dz
+    zones[#zones+1]={min={x=x,y=y,z=z},max={x=x,y=span.roof,z=z}}
+    for yy=y,span.roof do
+     local wall=math.abs(dx)==2 or math.abs(dz)==2
+     local door=math.abs(dx)==2 and dz==0 and yy<y+2
+     if yy==span.roof or wall and not door then
+      local name='mcl_trees:wood_spruce'
+      if dx==0 and dz==2 and yy==y+1 then name='harrows_trail:mid_'..span.kind end
+      nodes[#nodes+1]={pos={x=x,y=yy,z=z},name=name,replace_natural_snow=yy==y}
+     end
+    end
+   end end
+  end
+  return nodes,zones
+ end
  for _,spec in ipairs(assert(sites[id])) do
   local p,h=spec.pos,spec.half
   zones[#zones+1]={min={x=p.x-h,y=p.y,z=p.z-h},max={x=p.x+h,y=p.y+(spec.tower and 6 or 3),z=p.z+h}}
