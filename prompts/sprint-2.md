@@ -1,0 +1,11 @@
+# Harrow’s Trail — Sprint 2 Prompt: First Frontier Chapter
+
+Continue the existing **Harrow’s Trail** Luanti/Mineclonia project from the Sprint 1 build. Read the current implementation and the supplied GDD before changing anything. Preserve the pinned game versions, save compatibility, and the already playable opening; do not replace the prototype with a new architecture.
+
+**Outcome:** Complete Acts 1–4 so a new player can go from the burned ranch to Red Mesa, post bail for Jesse Moss, receive map fragment 2, cross the Dust Flats, and reach Dry Gulch. The build must remain playable at every checkpoint.
+
+**Implement:** Finish the Act 1–2 story flow; add a reusable data-driven act/gate system; implement Act 3’s 9 gold ingots (one gold block equivalent) bail gate, Jesse’s release, Ada’s fragment, and clear next-step guidance; implement Act 4’s night Dust Flats crossing with lantern markers/shelters and a meaningful exposed-fast versus sheltered-slower route choice; add minimal usable Red Mesa/Dry Gulch spaces, Ada/Jesse/Ruth interactions, and Ruth’s costly fallback path. Add only the honor/wanted rules needed for actions already present. Persist story state, choice flags, honor/wanted values, and unlocks. Verify every item identifier against the pinned Mineclonia registry.
+
+**Rules:** Gate definitions and consumption flags live in data, not duplicated dialogue. Explain missing requirements and disclose consumed items before confirmation. Bail gold is consumed once; lanterns and saddle are retained. A gate unlock is permanent. Each act needs an objective and playable resolution, not just a check for ingredients. No timer, forced grind, or loss of story progress on death. Keep NPC/weather implementation limited to this chapter; defer full routines and polish.
+
+**Done means:** A clean full path from fresh start to Dry Gulch passes; the Sprint 1 choice and horse/saddle path still work; save/rejoin tests pass; the Dust Flats route choice has a visible gameplay consequence; fallback/economy is reachable through ordinary play; and a test record covers valid/invalid gates, consumption, persistence, death, and the complete chapter. Fix runtime errors and summarize changes, run instructions, test outcomes, known issues, and decisions needed for Sprint 3. Do not implement Acts 5–10.

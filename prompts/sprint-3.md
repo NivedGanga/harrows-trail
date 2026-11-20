@@ -1,0 +1,11 @@
+# Harrow’s Trail — Sprint 3 Prompt: The Trail Widens
+
+Continue the tested **Harrow’s Trail** project and existing save/state model. Read the GDD plus the current implementation and sprint test notes. Implement **Sprint 3: Acts 5–8**, keeping all previous content playable and preserving saves.
+
+**Outcome:** From Dry Gulch, Eli can cross Iron Pass, explore Silver Spur, breach Crane’s Station, investigate the Ghost Mine, and reach Bitter River. The player finds ledger page 1 and then page 2, learns the planned truth about Samuel and the robbery, and has a clear next objective leading toward Nora.
+
+**Implement:** Act 5’s collapsed-shaft/pickaxe challenge, fragment 3, and optional fragment-combination map/cache puzzle; Act 6’s barricade with player-directed TNT placement/trigger and Crane’s escape clue; Act 7’s filled badlands map gate and Ghost Mine investigation yielding ledger page 1; Act 8’s boat gate, Bitter River ferry encounter with pay/high-honor waiver/snagged-line alternatives, and ledger page 2. Add only the minimum tested site layouts and interactions. Store fixed site coordinates and one-time placement flags. Extend act/gate state and save migration safely. Verify all Mineclonia item/node IDs.
+
+**Rules:** Gates unlock permanently and communicate missing/consumed items. TNT is consumed once on Act 6 start; equipment specified as reusable remains reusable. Map fragments combine consistently. The gold cache is optional, is not a rescue prerequisite, and its discovery/choice persists. Each act must contain investigation, navigation, a choice, or another playable beat beyond checking inventory. Preserve the no-timer design and provide objective updates that keep Nora’s rescue narratively present. Do not implement Acts 9–10 or spend time on final art/audio.
+
+**Done means:** A new player can follow the full path from the beginning to Bitter River; ledger clues appear in order; the optional cache cannot block the main story; all state and gate consumption survive rejoin/restart; site placement is tested once and avoids obvious overlap; and the regression test record includes Acts 1–8, valid/invalid gates, placement, death, and save recovery. Fix runtime errors, summarize changes and test results, identify any open decisions needed for the finale, and stop before Acts 9–10.
