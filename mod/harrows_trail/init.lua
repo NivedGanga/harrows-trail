@@ -1,7 +1,20 @@
 local storage = core.get_mod_storage()
 local world_sites = dofile(core.get_modpath("harrows_trail") .. "/world_sites.lua")(storage)
+local world_buildings = dofile(core.get_modpath("harrows_trail") .. "/world_buildings.lua")
 local grant = dofile(core.get_modpath("harrows_trail") .. "/inventory.lua")
 local states = {}
+core.register_chatcommand("trail_sites", {
+ description = "Inspect Harrow's Trail world site status", privs = {server=true},
+ func = function()
+  local out = {}
+  for id, site in pairs(world_sites.registry) do
+   out[#out+1] = id .. " x=" .. site.center.x .. " z=" .. site.center.z ..
+    " " .. (world_sites.placed(id) and "placed" or "not placed")
+  end
+  table.sort(out)
+  return true, table.concat(out, "; ")
+ end,
+})
 local saddle = "mcl_mobitems:saddle"
 local starter = dofile(core.get_modpath("harrows_trail") .. "/saddle.lua")(storage)
 local function default_state()
@@ -394,7 +407,7 @@ end)
 if core.settings:get_bool("harrows_trail_test", false) then
 	harrows_trail_test = {states = states, load = load, save = save, interact = interact,
 		receive_fields = receive_fields, journal = journal, is_riding = is_riding,
-		ensure_site = ensure_site, site = site, storage = storage, world_sites = world_sites,
+		ensure_site = ensure_site, site = site, storage = storage, world_sites = world_sites, world_buildings = world_buildings,
 		grant = grant, starter = starter, recover_horse_saddle = recover_horse_saddle, deliver_saddles = deliver_saddles}
 end
 

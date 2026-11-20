@@ -29,14 +29,31 @@ local function finish()
 end
 local function test_world_sites()
  local sites=api.world_sites
+ assert(core.registered_chatcommands.trail_sites.privs.server)
  assert(sites.registry.ranch.biome_prefix=='Savanna' and sites.registry.red_mesa.biome_prefix=='Mesa')
  local pos={x=0,y=221,z=4}
  local biome=assert(mcl_biome_dispatch.get_biome_name(pos))
  local site={center={x=0,z=4},half_x=0,half_z=0,height=2,biome_prefix=biome}
+ core.set_node({x=0,y=220,z=4},{name='mcl_core:dirt'})
  local layout={{pos=pos,name='harrows_trail:ash'}}
  assert(sites.preflight(site,221,layout))
+ core.set_node({x=0,y=220,z=4},{name='harrows_trail:floor'})
+ local ground_ok=sites.preflight(site,221,layout); assert(not ground_ok)
+ core.set_node({x=0,y=220,z=4},{name='mcl_core:dirt'})
+ core.get_node_timer(pos):start(30)
+ local timer_ok,timer_reason=sites.preflight(site,221,layout); assert(not timer_ok and timer_reason:find('timer',1,true))
+ core.get_node_timer(pos):stop()
+ local protect=core.is_protected; core.is_protected=function() return true end
+ local protected_ok,protected_reason=sites.preflight(site,221,layout); core.is_protected=protect
+ assert(not protected_ok and protected_reason:find('protected',1,true))
  local wrong={center=site.center,half_x=0,half_z=0,height=2,biome_prefix='not_a_biome'}
  local ok,why=sites.preflight(wrong,221,layout); assert(not ok and why:find('unsuitable biome',1,true))
+ local upper={x=0,y=222,z=4}
+ core.set_node(pos,{name='mcl_flowers:tallgrass'})
+ assert(sites.preflight(site,221,{{pos=upper,name='harrows_trail:ash'}}))
+ assert(core.get_node(pos).name=='mcl_flowers:tallgrass')
+ local grass_ok=sites.preflight(site,221,layout); assert(not grass_ok)
+ core.set_node(pos,{name='air'})
  core.set_node(pos,{name='mcl_core:obsidian'})
  ok,why=sites.preflight(site,221,layout); assert(not ok and why:find('occupied',1,true)); assert(core.get_node(pos).name=='mcl_core:obsidian')
  core.set_node(pos,{name='air'}); core.get_meta(pos):set_string('owner','test')
@@ -46,6 +63,15 @@ local function test_world_sites()
  ok,why=sites.preflight(site,221,layout); assert(not ok and why:find('village',1,true)); mcl_villages.remove_poi(poi_id)
  local item=assert(core.add_item(pos,'mcl_core:gold_ingot'))
  ok,why=sites.preflight(site,221,layout); assert(not ok and why:find('object',1,true)); item:remove()
+ local two={center={x=0,z=4},half_x=1,half_z=0,height=2,biome_prefix=biome}
+ local high={x=1,y=222,z=4}
+ core.set_node({x=1,y=221,z=4},{name='mcl_core:dirt'})
+ local zones={{min=pos,max={x=0,y=222,z=4}},{min=high,max={x=1,y=223,z=4}}}
+ local split={{pos=pos,name='harrows_trail:ash'},{pos=high,name='harrows_trail:ash'}}
+ assert(sites.preflight(two,221,split,zones))
+ split[2].pos={x=-1,y=222,z=4}; ok,why=sites.preflight(two,221,split,zones)
+ assert(not ok and why:find('outside checked zones',1,true))
+ core.set_node({x=1,y=221,z=4},{name='air'})
  sites.registry.test_fixture=site
  assert(sites.place('test_fixture',221,layout)); assert(sites.placed('test_fixture'))
  assert(core.get_node(pos).name=='harrows_trail:ash')
@@ -481,7 +507,12 @@ local function run_first()
 	finish()
 end
 local function wait_for_site(attempt)
-	if api.storage:get_string("site_ready") == "1" and api.storage:get_string("chapter_site") == "1" and api.storage:get_string("sprint3_site") == "1" and api.storage:get_string("sprint4_site") == "1" then return run_first() end
+	if api.storage:get_string("site_ready") == "1" and api.storage:get_string("chapter_site") == "1" and api.storage:get_string("sprint3_site") == "1" and api.storage:get_string("sprint4_site") == "1" then
+		return core.emerge_area({x=-48,y=176,z=-32},{x=32,y=272,z=48},function(_,action,left)
+			assert(action~=core.EMERGE_ERRORED and action~=core.EMERGE_CANCELLED)
+			if left==0 then run_first() end
+		end)
+	end
 	assert(attempt < 90, "site did not finish placement")
 	core.after(1, wait_for_site, attempt + 1)
 end
@@ -531,6 +562,7 @@ core.after(0, function()
 					if core.get_item_group(node, "solid") > 0 then height = tostring(y); break end
 				end
 				core.log("action", "[sprint1_test] survey x=" .. x .. " ground=" .. height)
+				core.log("action", "[sprint1_test] survey x=" .. x .. " biome=" .. tostring(mcl_biome_dispatch.get_biome_name({x=x,y=tonumber(height) or 0,z=0})))
 			end
 			local pois = mcl_villages.get_pois_in_by_nodepos({x=-13,y=-32,z=-10}, {x=65,y=219,z=10})
 			core.log("action", "[sprint1_test] survey registered village POIs=" .. #pois)
