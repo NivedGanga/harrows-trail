@@ -3,6 +3,8 @@ return function(storage)
  local registry={
   ranch={center={x=654,z=652},radius=64,half_x=18,half_z=16,height=4,biome_prefix='Savanna',base_y=19},
   red_mesa={center={x=623,z=788},radius=64,half_x=19,half_z=2,height=8,biome_prefix='Mesa',base_y=21},
+  dust_flats={center={x=640,z=1024},radius=64,half_x=10,half_z=8,height=5,biome_prefix='Desert',base_y=10},
+  dry_gulch={center={x=602,z=1274},radius=64,half_x=12,half_z=8,height=7,biome_prefix='Plains',base_y=34},
  }
  local natural_ground={['mcl_core:dirt_with_grass']=true,['mcl_core:dirt']=true,['mcl_core:sand']=true,['mcl_core:redsand']=true,['mcl_colorblocks:hardened_clay']=true,['mcl_colorblocks:hardened_clay_orange']=true}
  for color in pairs(mcl_dyes.colors) do natural_ground['mcl_colorblocks:hardened_clay_'..color]=true end

@@ -1,6 +1,7 @@
 local storage = core.get_mod_storage()
 local world_sites = dofile(core.get_modpath("harrows_trail") .. "/world_sites.lua")(storage)
 local world_buildings = dofile(core.get_modpath("harrows_trail") .. "/world_buildings.lua")
+local world_midgame = dofile(core.get_modpath("harrows_trail") .. "/world_midgame.lua")
 local grant = dofile(core.get_modpath("harrows_trail") .. "/inventory.lua")
 local states = {}
 core.register_chatcommand("trail_sites", {
@@ -221,6 +222,7 @@ local function interact(kind, pos, player)
 	end
 end
 local world_opening = dofile(core.get_modpath("harrows_trail") .. "/world_opening.lua")(interact)
+local world_midgame_nodes = dofile(core.get_modpath("harrows_trail") .. "/world_midgame_nodes.lua")(interact)
 core.register_craftitem("harrows_trail:fragment_1", {
 	description = "Samuel's map fragment 1",
 	inventory_image = "default_paper.png",
@@ -524,7 +526,7 @@ end)
 if core.settings:get_bool("harrows_trail_test", false) then
 	harrows_trail_test = {states = states, load = load, save = save, interact = interact,
 		receive_fields = receive_fields, journal = journal, is_riding = is_riding,
-		ensure_site = ensure_site, ensure_grounded_site = ensure_grounded_site, update_grounded = update_grounded, advance_ranch_route = advance_ranch_route, opening_target = opening_target, grounded_mode = grounded_mode, site = site, storage = storage, world_sites = world_sites, world_buildings = world_buildings, world_opening = world_opening,
+		ensure_site = ensure_site, ensure_grounded_site = ensure_grounded_site, update_grounded = update_grounded, advance_ranch_route = advance_ranch_route, opening_target = opening_target, grounded_mode = grounded_mode, site = site, storage = storage, world_sites = world_sites, world_buildings = world_buildings, world_opening = world_opening, world_midgame = world_midgame, world_midgame_nodes = world_midgame_nodes,
 		grant = grant, starter = starter, recover_horse_saddle = recover_horse_saddle, deliver_saddles = deliver_saddles}
 end
 
