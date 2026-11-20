@@ -1,22 +1,22 @@
 -- Construction data is checked against the terrain before any node is placed.
 local sites={
  dust_flats={
-  {name='dust',pos={x=640,y=10,z=1024},half=2,material='mcl_core:sandstone',open=true,actor='dust'},
-  {name='exposed',pos={x=648,y=10,z=1024},half=2,material='mcl_core:sandstone',open=true,fixture='exposed'},
-  {name='shelter1',pos={x=640,y=11,z=1018},half=2,material='mcl_core:sandstone',open=true,fixture='shelter1'},
-  {name='shelter2',pos={x=638,y=10,z=1030},half=2,material='mcl_core:sandstone',open=true,fixture='shelter2'},
+  {name='dust',pos={x=642,y=11,z=1012},half=2,material='mcl_core:sandstone',open=true,actor='dust'},
+  {name='exposed',pos={x=660,y=10,z=1024},half=2,material='mcl_core:sandstone',open=true,fixture='exposed'},
+  {name='shelter1',pos={x=620,y=12,z=1010},half=2,material='mcl_core:sandstone',open=true,fixture='shelter1'},
+  {name='shelter2',pos={x=618,y=10,z=1036},half=2,material='mcl_core:sandstone',open=true,fixture='shelter2'},
  },
  dry_gulch={
-  {name='trading',pos={x=602,y=34,z=1274},half=2,material='mcl_trees:wood_spruce',actor='gulch'},
-  {name='shop',pos={x=602,y=34,z=1268},half=1,material='mcl_trees:wood_spruce',actor='ruth_gulch'},
-  {name='stable',pos={x=612,y=33,z=1274},half=2,material='mcl_trees:wood_spruce',open=true,actor='dutch'},
-  {name='tower',pos={x=596,y=34,z=1278},half=2,material='mcl_trees:wood_spruce',open=true,tower=true},
+  {name='trading',pos={x=536,y=9,z=1212},half=2,material='mcl_trees:wood_spruce',actor='gulch'},
+  {name='shop',pos={x=518,y=7,z=1210},half=1,material='mcl_trees:wood_spruce',actor='ruth_gulch'},
+  {name='stable',pos={x=522,y=7,z=1218},half=2,material='mcl_trees:wood_spruce',open=true,actor='dutch'},
+  {name='tower',pos={x=510,y=6,z=1206},half=2,material='mcl_trees:wood_spruce',open=true,tower=true},
  },
 }
 local positions={
- dust={x=640,y=10,z=1024},exposed={x=646,y=11,z=1024},
- shelter1={x=638,y=12,z=1018},shelter2={x=636,y=11,z=1030},
- gulch={x=602,y=34,z=1274},ruth_gulch={x=602,y=34,z=1268},dutch={x=612,y=33,z=1274},
+ dust={x=642,y=11,z=1012},exposed={x=658,y=11,z=1024},
+ shelter1={x=618,y=13,z=1010},shelter2={x=616,y=11,z=1036},
+ gulch={x=536,y=9,z=1212},ruth_gulch={x=518,y=7,z=1210},dutch={x=522,y=7,z=1218},
 }
 local function layout(id)
  local nodes,zones={},{}

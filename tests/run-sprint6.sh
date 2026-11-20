@@ -3,9 +3,9 @@ set -eu
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 engine="$project_dir/.local/luanti.app/Contents/MacOS/luanti"
 test_dir=$(mktemp -d "${TMPDIR:-/tmp}/harrows-sprint6.XXXXXX")
-for phase in write read blocked modified; do
- case "$phase" in blocked|modified) world_dir="$test_dir/$phase-world" ;; *) world_dir="$test_dir/world" ;; esac
- if [ "$phase" != read ]; then
+for phase in write read blocked modified modified_read; do
+ case "$phase" in blocked) world_dir="$test_dir/blocked-world" ;; modified|modified_read) world_dir="$test_dir/modified-world" ;; *) world_dir="$test_dir/world" ;; esac
+ if [ "$phase" != read ] && [ "$phase" != modified_read ]; then
   mkdir -p "$world_dir/worldmods"
   printf 'gameid = mineclonia\nbackend = sqlite3\nplayer_backend = files\nauth_backend = files\nload_mod_harrows_trail = true\n' > "$world_dir/world.mt"
   cp -R "$project_dir/tests/sprint6_test" "$world_dir/worldmods/"

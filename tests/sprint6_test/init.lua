@@ -17,8 +17,8 @@ local function run(i)
    core.set_node(target,{name='mcl_core:obsidian'})
    local ok=api.world_sites.place(id,y,layout,zones)
    assert(not ok and not api.world_sites.placed(id) and core.get_node(target).name=='mcl_core:obsidian')
-  elseif phase=='modified' then
-   api.world_sites.mark_touched({x=p.x,y=y,z=p.z})
+  elseif phase=='modified' or phase=='modified_read' then
+   if phase=='modified' then api.world_sites.mark_touched({x=p.x,y=y,z=p.z}) else assert(api.world_sites.touched(id)) end
    local ok,reason=api.world_sites.place(id,y,layout,zones)
    assert(not ok and reason:find('modified',1,true) and not api.world_sites.placed(id))
   else
