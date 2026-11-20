@@ -1,0 +1,39 @@
+#!/bin/sh
+set -eu
+project_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+world_dir="$project_dir/.local/play-world"
+lock_dir="$project_dir/.local/play.lock"
+if [ "${HARROWS_WORLD+x}" = x ]; then
+  printf 'HARROWS_WORLD is not supported by the fresh-game launcher. No world was changed.\n' >&2
+  exit 1
+fi
+if [ ! -x "$project_dir/.local/luanti.app/Contents/MacOS/luanti" ] || [ ! -f "$project_dir/tests/horse_pen/init.lua" ]; then
+  printf 'The pinned Luanti installation or horse-pen fixture is missing.\n' >&2
+  exit 1
+fi
+mkdir -p "$project_dir/.local"
+if ! mkdir "$lock_dir" 2>/dev/null; then
+  printf 'A ./play session is already running (or .local/play.lock needs removal). Close it before starting another.\n' >&2
+  exit 1
+fi
+trap 'rmdir "$lock_dir" 2>/dev/null || :' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+if [ -e "$world_dir" ] || [ -L "$world_dir" ]; then
+  if [ -L "$world_dir" ] || [ ! -f "$world_dir/.harrows-play-disposable" ]; then
+    printf 'Refusing to reset an unrecognized world: %s\n' "$world_dir" >&2
+    exit 1
+  fi
+  rm -rf "$world_dir"
+fi
+mkdir -p "$world_dir/worldmods"
+touch "$world_dir/.harrows-play-disposable"
+printf 'gameid = mineclonia\nbackend = sqlite3\nplayer_backend = files\nauth_backend = files\n' > "$world_dir/world.mt"
+cp "$world_dir/world.mt" "$world_dir/world.mt.before-harrows"
+printf '\nload_mod_harrows_trail = true\nload_mod_horse_pen = true\n' >> "$world_dir/world.mt"
+cp -R "$project_dir/tests/horse_pen" "$world_dir/worldmods/"
+export LUANTI_USER_PATH="$project_dir/.local/user"
+export LUANTI_GAME_PATH="$project_dir/.local/games"
+export LUANTI_MOD_PATH="$project_dir/mod"
+"$project_dir/.local/luanti.app/Contents/MacOS/luanti" \
+  --world "$world_dir" --go --name "${HARROWS_PLAYER:-pen_tester}" --port "${HARROWS_PORT:-30995}"
