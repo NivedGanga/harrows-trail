@@ -80,7 +80,8 @@ return function(storage)
      local pos={x=x,y=yy,z=z}; local node=core.get_node_or_nil(pos)
      local target=targets[core.pos_to_string(pos)]
      local allowed_snow=node and node.name=='mcl_core:snow' and yy==a.y and site.allow_natural_snow and (not target or target.replace_natural_snow==true)
-     if not node or (node.name~='air' and not allowed_snow and (node.name~='mcl_flowers:tallgrass' or target)) then return false,'occupied or unloaded: '..core.pos_to_string(pos) end
+     local allowed_terrain=node and target and target.terrain_edit==true and site.allow_terrain_edit==true and type(site.terrain_nodes)=='table' and site.terrain_nodes[node.name]==true
+     if not node or (node.name~='air' and not allowed_snow and not allowed_terrain and (node.name~='mcl_flowers:tallgrass' or target)) then return false,'occupied or unloaded: '..core.pos_to_string(pos) end
      if core.is_protected(pos,'') then return false,'protected: '..core.pos_to_string(pos) end
      local meta=core.get_meta(pos):to_table()
      if meta and (next(meta.fields or {}) or next(meta.inventory or {})) then return false,'metadata present: '..core.pos_to_string(pos) end

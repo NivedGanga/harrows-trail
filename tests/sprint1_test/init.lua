@@ -66,6 +66,15 @@ local function test_world_sites()
  core.get_meta(pos):set_string('owner','test'); assert(not sites.preflight(site,221,layout)); core.get_meta(pos):set_string('owner','')
  assert(sites.preflight(site,221,{{pos=upper,name='harrows_trail:ash'}})); assert(core.get_node(pos).name=='mcl_core:snow')
  layout[1].replace_natural_snow=nil; site.allow_natural_snow=nil
+ core.set_node(pos,{name='mcl_core:stone'})
+ local cut={{pos=pos,name='air',terrain_edit=true}}
+ assert(not sites.preflight(site,221,cut))
+ site.allow_terrain_edit=true;site.terrain_nodes={['mcl_core:stone']=true}
+ assert(sites.preflight(site,221,cut));assert(core.get_node(pos).name=='mcl_core:stone')
+ assert(not sites.preflight(site,221,{{pos=pos,name='air'}}))
+ core.get_meta(pos):set_string('owner','test');assert(not sites.preflight(site,221,cut));core.get_meta(pos):set_string('owner','')
+ core.set_node(pos,{name='mcl_core:obsidian'});assert(not sites.preflight(site,221,cut))
+ site.allow_terrain_edit=nil;site.terrain_nodes=nil
  core.set_node(pos,{name='air'})
  core.set_node(pos,{name='mcl_core:obsidian'})
  ok,why=sites.preflight(site,221,layout); assert(not ok and why:find('occupied',1,true)); assert(core.get_node(pos).name=='mcl_core:obsidian')
