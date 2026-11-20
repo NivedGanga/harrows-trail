@@ -18,12 +18,18 @@ local sites={
   {name='office',pos={x=560,y=20,z=856},half=1,material='mcl_trees:wood_spruce',fixture='ledger1'},
  },
  iron_pass={},
+ silver_spur={
+  {name='assay_office',pos={x=-464,y=10,z=-548},half=2,material='mcl_trees:wood_spruce',fixture='assay',extra_fixtures={{dx=2,dz=0,kind='cartography'},{dx=0,dz=2,kind='gold_cache'}}},
+  {name='shack',pos={x=-466,y=11,z=-556},half=2,material='mcl_trees:wood_spruce'},
+  {name='headframe',pos={x=-460,y=12,z=-566},half=2,material='mcl_trees:wood_spruce',open=true,tower=true},
+ },
 }
 local positions={
  dust={x=642,y=11,z=1012},exposed={x=658,y=11,z=1024},
  shelter1={x=618,y=13,z=1010},shelter2={x=616,y=11,z=1036},
  gulch={x=536,y=9,z=1212},ruth_gulch={x=518,y=7,z=1210},dutch={x=522,y=7,z=1218},
  mine_gate={x=559,y=22,z=832},mine_clue={x=559,y=22,z=840},ledger1={x=559,y=21,z=856},
+ assay={x=-466,y=11,z=-548},cartography={x=-462,y=11,z=-548},gold_cache={x=-464,y=11,z=-546},
 }
 local function layout(id)
  local nodes,zones={},{}
@@ -61,6 +67,9 @@ local function layout(id)
    if include then
     local node=spec.material
     if dx==-h and dz==0 and dy==1 and (spec.actor or spec.fixture) then node='harrows_trail:mid_'..(spec.actor or spec.fixture) end
+    if dy==1 then for _,fixture in ipairs(spec.extra_fixtures or {}) do
+     if dx==fixture.dx and dz==fixture.dz then node='harrows_trail:mid_'..fixture.kind end
+    end end
     nodes[#nodes+1]={pos={x=p.x+dx,y=p.y+dy,z=p.z+dz},name=node}
    end
   end end end

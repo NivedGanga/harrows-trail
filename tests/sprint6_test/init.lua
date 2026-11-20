@@ -1,6 +1,6 @@
 local api=assert(harrows_trail_test)
 local phase=assert(core.settings:get('harrows_sprint6_phase'))
-local jobs={'dust_flats','dry_gulch','ghost_mine','iron_pass'}
+local jobs={'dust_flats','dry_gulch','ghost_mine','iron_pass','silver_spur'}
 local function finish()
  core.log('action','[sprint6_test] PASS '..phase)
  core.request_shutdown('Sprint 6 test complete',false,0)

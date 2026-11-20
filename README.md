@@ -126,3 +126,5 @@ Sprint 6 is in progress. `./tests/run-sprint6.sh` tests isolated Dust Flats, Dry
 An opt-in snowy-terrain preflight rule passed `./tests/run-sprint1.sh` (write, read, occupied-site and survey; logs `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint1.p5dID1`). No active site uses it yet, and the snowy mountain route has not been verified.
 
 An inactive Iron Pass construction plan also passed `./tests/run-sprint6.sh` (write, read, blocked, modified and modified_read; logs `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.s8gdck`). The pass is still preliminary and its route, appearance and gameplay have not been verified.
+
+Preliminary Silver Spur construction data has been added but is also inactive and unfinished. The latest `./tests/run-sprint6.sh` passed all five phases for the five planned site groups; logs are in `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.mD8ckV`. No mountain route or graphical playthrough was verified.

@@ -15,7 +15,7 @@ return function(interact)
   on_activate=function(self,data) if not actors[data] then self.object:remove();return end;self.kind=data;self.object:set_armor_groups({immortal=1}) end,
   on_rightclick=function(self,p) interact(self.kind,self.object:get_pos(),p) end,
  })
- for _,kind in ipairs({'dust','gulch','ruth_gulch','dutch','exposed','shelter1','shelter2','mine_gate','mine_clue','ledger1','pass','rubble1','rubble2'}) do
+ for _,kind in ipairs({'dust','gulch','ruth_gulch','dutch','exposed','shelter1','shelter2','mine_gate','mine_clue','ledger1','pass','rubble1','rubble2','assay','cartography','gold_cache'}) do
   local actor=actors[kind]
   core.register_node('harrows_trail:mid_'..kind,{
    description=actor and 'Building wall' or 'Trail shelter',
