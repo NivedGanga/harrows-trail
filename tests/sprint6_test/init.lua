@@ -1,6 +1,6 @@
 local api=assert(harrows_trail_test)
 local phase=assert(core.settings:get('harrows_sprint6_phase'))
-local jobs={'dust_flats','dry_gulch','ghost_mine','iron_pass','silver_spur','gulch_bridge'}
+local jobs={'dust_flats','dry_gulch','ghost_mine','iron_pass','silver_spur','gulch_bridge','foothill_bridge','pass_bridge'}
 local function finish()
  core.log('action','[sprint6_test] PASS '..phase)
  core.request_shutdown('Sprint 6 test complete',false,0)
@@ -34,6 +34,14 @@ local function run(i)
     for _,z in ipairs({676,702}) do
      local ground=core.get_node({x=504,y=14,z=z});assert(core.get_item_group(ground.name,'solid')>0,'bridge bank has no landing')
      for yy=15,18 do assert(core.get_node({x=504,y=yy,z=z}).name=='air','bridge approach blocked') end
+    end
+   end
+   if id=='foothill_bridge' or id=='pass_bridge' then
+    local anchors=site.bridge_anchors
+    for i,delta in ipairs({-1,1}) do
+     local at=anchors[i];local x=at.x+delta
+     assert(core.get_item_group(core.get_node({x=x,y=y-1,z=at.z}).name,'solid')>0,'crossing bank has no landing')
+     for yy=y,y+3 do assert(core.get_node({x=x,y=yy,z=at.z}).name=='air','crossing approach blocked') end
     end
    end
    api.world_midgame_nodes.ensure_actors(api.world_midgame.sites[id])

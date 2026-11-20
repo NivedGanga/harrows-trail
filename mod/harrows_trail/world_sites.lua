@@ -10,6 +10,10 @@ return function(storage)
   silver_spur={center={x=-463,z=-557},radius=64,half_x=5,half_z=11,height=8,biome_prefix='ExtremeHills+',base_y=11},
   gulch_bridge={center={x=504,z=689},radius=64,half_x=2,half_z=13,height=4,biome_prefix='Desert',base_y=15,
    bridge_anchors={{x=504,y=14,z=677},{x=504,y=14,z=701}}},
+  foothill_bridge={center={x=-308,z=-399},radius=64,half_x=9,half_z=2,height=4,biome_prefix='Mesa',base_y=11,
+   bridge_anchors={{x=-317,y=10,z=-399},{x=-299,y=10,z=-399}}},
+  pass_bridge={center={x=-422,z=-481},radius=64,half_x=2,half_z=2,height=4,biome_prefix='ExtremeHills',base_y=6,
+   bridge_anchors={{x=-424,y=5,z=-481},{x=-420,y=5,z=-481}}},
  }
  local natural_ground={['mcl_core:dirt_with_grass']=true,['mcl_core:dirt']=true,['mcl_core:sand']=true,['mcl_core:redsand']=true,['mcl_colorblocks:hardened_clay']=true,['mcl_colorblocks:hardened_clay_orange']=true}
  for color in pairs(mcl_dyes.colors) do natural_ground['mcl_colorblocks:hardened_clay_'..color]=true end

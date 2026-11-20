@@ -135,3 +135,5 @@ This is an active hackathon project. For bugs or implementation work, begin with
 Sprint 6 bridge checkpoint: an inactive bridge plan near X=500/Z=689 passed `./tests/run-sprint6.sh` (write, read, blocked, modified, modified_read), including missing-anchor and anchor-metadata refusal. Logs: `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.L2RWOG`. The complete mountain route and graphical presentation remain unverified; Sprint 6 is incomplete.
 
 Sprint 6 bridge approach correction: the inactive plan is now near X=504/Z=689 with a landing step. `./tests/run-sprint6.sh` passed all five phases including landing and approach-clearance assertions (logs `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.BczwQw`). The earlier alignment failed the walking survey; full route, actual riding and graphics remain unverified.
+
+Sprint 6 foothill crossing checkpoint: two additional inactive bridge plans passed `./tests/run-sprint6.sh` in all five phases, including bank landing checks (logs `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.WhvHkX`). The connected route, gameplay activation and graphics remain unverified.

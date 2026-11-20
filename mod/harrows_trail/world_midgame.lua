@@ -19,6 +19,7 @@ local sites={
  },
  iron_pass={},
  gulch_bridge={},
+ foothill_bridge={},pass_bridge={},
  silver_spur={
   {name='assay_office',pos={x=-464,y=10,z=-548},half=2,material='mcl_trees:wood_spruce',fixture='assay',extra_fixtures={{dx=2,dz=0,kind='cartography'},{dx=0,dz=2,kind='gold_cache'}}},
   {name='shack',pos={x=-466,y=11,z=-556},half=2,material='mcl_trees:wood_spruce'},
@@ -34,6 +35,16 @@ local positions={
 }
 local function layout(id)
  local nodes,zones={},{}
+ local crossing=({foothill_bridge={x1=-317,x2=-299,y=11,z=-399},pass_bridge={x1=-424,x2=-420,y=6,z=-481}})[id]
+ if crossing then
+  local c=crossing
+  zones[1]={min={x=c.x1,y=c.y,z=c.z-2},max={x=c.x2,y=c.y+3,z=c.z+2},bridge_span=true}
+  for x=c.x1,c.x2 do for z=c.z-2,c.z+2 do
+   nodes[#nodes+1]={pos={x=x,y=c.y,z=z},name='mcl_trees:wood_spruce'}
+   if math.abs(z-c.z)==2 then for y=c.y+1,c.y+2 do nodes[#nodes+1]={pos={x=x,y=y,z=z},name='mcl_trees:wood_spruce'} end end
+  end end
+  return nodes,zones
+ end
  if id=='gulch_bridge' then
   zones[1]={min={x=502,y=15,z=677},max={x=506,y=18,z=701},bridge_span=true}
   zones[2]={min={x=503,y=14,z=702},max={x=505,y=18,z=702}}
