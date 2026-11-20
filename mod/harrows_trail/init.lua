@@ -1,4 +1,5 @@
 local storage = core.get_mod_storage()
+local world_sites = dofile(core.get_modpath("harrows_trail") .. "/world_sites.lua")(storage)
 local grant = dofile(core.get_modpath("harrows_trail") .. "/inventory.lua")
 local states = {}
 local saddle = "mcl_mobitems:saddle"
@@ -393,7 +394,7 @@ end)
 if core.settings:get_bool("harrows_trail_test", false) then
 	harrows_trail_test = {states = states, load = load, save = save, interact = interact,
 		receive_fields = receive_fields, journal = journal, is_riding = is_riding,
-		ensure_site = ensure_site, site = site, storage = storage,
+		ensure_site = ensure_site, site = site, storage = storage, world_sites = world_sites,
 		grant = grant, starter = starter, recover_horse_saddle = recover_horse_saddle, deliver_saddles = deliver_saddles}
 end
 

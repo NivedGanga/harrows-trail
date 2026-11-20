@@ -27,7 +27,32 @@ local function finish()
 	core.log("action", "[sprint1_test] PASS phase " .. phase)
 	core.request_shutdown("Sprint 1 automated test completed", false, 0)
 end
+local function test_world_sites()
+ local sites=api.world_sites
+ assert(sites.registry.ranch.biome_prefix=='Savanna' and sites.registry.red_mesa.biome_prefix=='Mesa')
+ local pos={x=0,y=221,z=4}
+ local biome=assert(mcl_biome_dispatch.get_biome_name(pos))
+ local site={center={x=0,z=4},half_x=0,half_z=0,height=2,biome_prefix=biome}
+ local layout={{pos=pos,name='harrows_trail:ash'}}
+ assert(sites.preflight(site,221,layout))
+ local wrong={center=site.center,half_x=0,half_z=0,height=2,biome_prefix='not_a_biome'}
+ local ok,why=sites.preflight(wrong,221,layout); assert(not ok and why:find('unsuitable biome',1,true))
+ core.set_node(pos,{name='mcl_core:obsidian'})
+ ok,why=sites.preflight(site,221,layout); assert(not ok and why:find('occupied',1,true)); assert(core.get_node(pos).name=='mcl_core:obsidian')
+ core.set_node(pos,{name='air'}); core.get_meta(pos):set_string('owner','test')
+ ok,why=sites.preflight(site,221,layout); assert(not ok and why:find('metadata',1,true)); core.get_meta(pos):set_string('owner','')
+ local poi_pos={x=10,y=221,z=4}; assert(not mcl_villages.get_poi(poi_pos))
+ local poi_id=mcl_villages.insert_poi(poi_pos,'mcl_villages:bed')
+ ok,why=sites.preflight(site,221,layout); assert(not ok and why:find('village',1,true)); mcl_villages.remove_poi(poi_id)
+ local item=assert(core.add_item(pos,'mcl_core:gold_ingot'))
+ ok,why=sites.preflight(site,221,layout); assert(not ok and why:find('object',1,true)); item:remove()
+ sites.registry.test_fixture=site
+ assert(sites.place('test_fixture',221,layout)); assert(sites.placed('test_fixture'))
+ assert(core.get_node(pos).name=='harrows_trail:ash')
+ assert(sites.place('test_fixture',221,layout)); assert(core.get_node(pos).name=='harrows_trail:ash')
+end
 local function run_first()
+	test_world_sites()
 	assert(core.registered_nodes["harrows_trail:barn"])
 	assert(core.registered_items["mcl_mobitems:saddle"])
 	assert(core.registered_entities["mobs_mc:horse"])
@@ -470,6 +495,7 @@ core.after(0, function()
 	elseif phase == "read" then
 		assert(not api.starter.valid(api.storage:get_string("old_issue_test")))
 		assert(api.starter.valid(api.storage:get_string("new_issue_test")))
+		assert(api.world_sites.placed('test_fixture'))
 		local duel=api.load('duel_test'); assert(duel.flags.mercer_outcome=='killed' and duel.flags.mercer_hits==3)
 		local finale=api.load('finale_test'); assert(finale.verdict=='mercy' and finale.flags.gold_choice=='ranch' and finale.nora_trust==60 and finale.unlocked['9'] and finale.unlocked['10'])
 		local later=api.load('sprint3_player')
