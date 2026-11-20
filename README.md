@@ -128,3 +128,5 @@ An opt-in snowy-terrain preflight rule passed `./tests/run-sprint1.sh` (write, r
 An inactive Iron Pass construction plan also passed `./tests/run-sprint6.sh` (write, read, blocked, modified and modified_read; logs `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.s8gdck`). The pass is still preliminary and its route, appearance and gameplay have not been verified.
 
 Preliminary Silver Spur construction data has been added but is also inactive and unfinished. The latest `./tests/run-sprint6.sh` passed all five phases for the five planned site groups; logs are in `/var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.mD8ckV`. No mountain route or graphical playthrough was verified.
+
+A disposable server terrain survey found a narrow approach between the preliminary mountain sites but did not establish horse-width access to Iron Pass or a route from Dry Gulch; see `docs/sprint-status.md` for the evidence and limitations.
