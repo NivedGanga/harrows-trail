@@ -1,0 +1,6 @@
+# Local seeded story-region weather and warm palette. No shaders required.
+harrows_trail_weather (Local frontier weather) bool true
+harrows_trail_particles (Frontier weather particles) bool true
+# Default off; each player can opt in with /trail_audio on.
+harrows_trail_ambience (Original frontier ambience default) bool false
+harrows_trail_ambience_gain (Frontier ambience volume) float 0.15 0.0 0.5

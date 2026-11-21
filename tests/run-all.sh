@@ -10,6 +10,7 @@ cd "$(dirname "$0")/.."
 ./tests/run-sprint7-integration.sh
 ./tests/run-sprint8.sh
 ./tests/run-sprint9.sh
+./tests/run-sprint10.sh
 ./tests/run-play-safety.sh
 sh -n play tests/run-*.sh
 git diff --check

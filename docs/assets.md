@@ -7,3 +7,19 @@ The humanoid mesh is referenced from pinned Mineclonia 0.124.1 (`mcl_armor_chara
 All cast skins are required bundled assets. The entity registration retains the native `character.png` base as a fallback before the cast layer activates; normal activation applies each original skin. Native armor/wield texture layers are preserved on Eli through `mcl_player.player_set_skin`. Removing Harrow's Trail leaves the player's native skin metadata unchanged.
 
 No third-party character artwork, downloaded music, or unverified assets are included.
+
+## Sprint 10 originals
+
+All of the following are project-authored CC0-1.0 assets. `tools/make-atmosphere.py` generates them without downloaded artwork, recordings or samples:
+
+- `harrows_wood.png`, `harrows_dark_wood.png`: weathered plank pixels. Used only by project-placed timber variants and project fixtures; native textures are not overwritten globally.
+- `harrows_rust.png`, `harrows_cloth.png`: iron patina and faded woven cloth for project fixtures.
+- `harrows_dust.png`, `harrows_rain.png`, `harrows_fog.png`: sparse translucent weather particles.
+- `harrows_wind.ogg`, `harrows_crickets.ogg`, `harrows_whistle.ogg`, `harrows_swamp.ogg`, `harrows_rail.ogg`: synthesized ambience, no recordings.
+- `harrows_saloon.ogg`: an original eight-second composed motif, synthesized with decaying harmonics, no transcription or samples.
+
+The supplied audio is Ogg Vorbis, stereo, 22050 Hz, about eight seconds each. Reproduction uses Python's standard library and FFmpeg's built-in experimental `vorbis` encoder (`-strict -2 -ac 2`); this installed FFmpeg lacks libvorbis. Those tools are needed only to regenerate/check media, not to play the bundled game. `python3 tests/check-audio.py` decodes every clip, checks Vorbis/duration/levels, and explicitly does not claim a listening review.
+
+Cast art was polished in its original generator with faded stitching, waistcoat buttons and hat overlays while retaining each palette. Missing skin files use distinct native character tints in entities and epilogue models. Missing weather textures suppress those particles; missing timber textures use the corresponding native texture. Missing sound files are skipped. The missing-assets test removes files only from a disposable mod copy.
+
+Native footstep sounds are inherited from the pinned wood definitions; project metal/cloth fixtures reference installed `mcl_sounds` defaults. No Mineclonia media is included among the original files. Its mesh, native texture and sound references still require the complete pinned game with its own licenses/credits.

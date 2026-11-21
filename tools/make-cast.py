@@ -32,6 +32,10 @@ for name,(coat,shirt,hair,skin,accent) in CAST.items():
  rect(16,16,24,16,coat);rect(20,20,8,9,shirt);rect(23,20,2,6,accent)
  rect(40,16,16,16,coat);rect(40,29,16,3,skin)
  rect(20,29,8,3,coat);rect(20,27,8,1,'382a20');rect(23,27,2,1,accent)
+ # Faded stitching, waistcoat buttons and hat overlay distinguish outfits at scale.
+ for y in (23,26): rect(24,y,1,1,'b6a385')
+ if name in ('eli','eli_duster','ada','dutch','crane','mercer'):
+  rect(40,8,8,2,coat);rect(32,10,32,1,coat)
  if name=='ada': rect(20,23,2,2,accent)
  if name in ('jonah','ruth'): rect(21,25,6,7,accent)
  if name=='ruth': rect(8,11,8,1,'2b2925')

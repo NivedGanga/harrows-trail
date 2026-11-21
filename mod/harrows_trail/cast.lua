@@ -61,7 +61,7 @@ return function(ctx)
    if ent.object:get_pos() and vector.distance(p:get_pos(),ent.object:get_pos())<=8 then continuation() end
   end)
  end
- local function texture(role) return 'harrows_'..role..'.png' end
+ local texture=ctx.skin
  local function decorate(ent)
   ent.role=roles[ent.kind] or ent.role;ent.home=vector.new(ent.object:get_pos());actors[ent]=true
   ent.object:set_properties({textures={texture(ent.role),'blank.png','blank.png'},nametag=''})

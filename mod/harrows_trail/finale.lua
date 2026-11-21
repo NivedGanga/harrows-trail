@@ -49,7 +49,7 @@ local function epilogue(s)
  return t..gold..trust
 end
 local function scene(s)
- local function model(role) return 'mcl_armor_character.b3d;harrows_'..role..'.png;0,180;false;false;0,0]' end
+ local function model(role) return 'mcl_armor_character.b3d;'..core.formspec_escape(ctx.skin(role))..';0,180;false;false;0,0]' end
  local eli='model[0.6,1;1.5,3;eli;'..model('eli_duster')
  local nora='model[2.2,1;1.5,3;nora;'..model('nora')
  if s.verdict=='justice' then

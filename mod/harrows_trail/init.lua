@@ -1,4 +1,5 @@
 local storage = core.get_mod_storage()
+local presentation=dofile(core.get_modpath("harrows_trail").."/presentation.lua")
 local world_sites = dofile(core.get_modpath("harrows_trail") .. "/world_sites.lua")(storage)
 local world_buildings = dofile(core.get_modpath("harrows_trail") .. "/world_buildings.lua")
 local world_midgame = dofile(core.get_modpath("harrows_trail") .. "/world_midgame.lua")
@@ -394,6 +395,7 @@ local function ensure_grounded_site(id)
    core.load_area(lower,upper)
    local layout,zones
    if world_lategame.sites[id] then layout,zones=world_lategame.layout(id) elseif world_midgame.sites[id] then layout,zones=world_midgame.layout(id) else layout,zones=world_buildings.layout(id) end
+   presentation.decorate(layout)
    local ok,reason=world_sites.place(id,y,layout,zones)
    ground_busy[id]=nil
    if not ok then
@@ -675,12 +677,15 @@ local world_travel = dofile(core.get_modpath("harrows_trail") .. "/world_travel.
 if core.settings:get_bool("harrows_trail_test", false) then harrows_trail_test.world_travel=world_travel end
 
 finale = dofile(core.get_modpath("harrows_trail") .. "/finale.lua")({
- reputation=reputation,states=states, save=save, storage=storage, message=message, grant=grant, chapter=chapter,late=late_mode})
+ skin=presentation.skin,reputation=reputation,states=states, save=save, storage=storage, message=message, grant=grant, chapter=chapter,late=late_mode})
 if grounded_mode then apply_grounded_positions() end
 chapter.context.finale_journal = finale.journal
 if core.settings:get_bool("harrows_trail_test", false) then harrows_trail_test.finale = finale end
 
-cast_layer = dofile(core.get_modpath('harrows_trail')..'/cast.lua')({states=states,save=save,chapter=chapter,finale=finale,late=late_mode,ada=world_buildings.positions.ada})
+cast_layer = dofile(core.get_modpath('harrows_trail')..'/cast.lua')({skin=presentation.skin,states=states,save=save,chapter=chapter,finale=finale,late=late_mode,ada=world_buildings.positions.ada})
 if harrows_trail_test then harrows_trail_test.cast=cast_layer end
 
 if harrows_trail_test then harrows_trail_test.reputation=reputation end
+
+local atmosphere=dofile(core.get_modpath("harrows_trail").."/atmosphere.lua")({assets=presentation})
+if harrows_trail_test then harrows_trail_test.atmosphere=atmosphere;harrows_trail_test.presentation=presentation end
