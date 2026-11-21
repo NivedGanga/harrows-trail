@@ -94,7 +94,7 @@ local function test_opening()
  actor('ruth',pos.ruth); api.chapter.receive(p,'harrows_trail:story',{lantern_buy=true})
  assert(inv:contains_item('main','mcl_lanterns:lantern_floor 4'))
  label,target=api.opening_target(p,s)
- if api.storage:get_string('world_layout_version')=='6' then
+ if (tonumber(api.storage:get_string('world_layout_version')) or 0)>=6 then
   assert(label=='Dust Flats departure' and target==api.chapter.positions.dust)
   local old_get=core.get_player_by_name
   core.get_player_by_name=function(name) if name=='opening_test' then return p else return old_get(name) end end
@@ -184,7 +184,7 @@ local function integration()
  local function wait(attempt)
   assert(attempt<45,'grounded ranch did not initialize')
   if api.storage:get_string('site_ready')~='1' then return core.after(1,wait,attempt+1) end
-  assert(api.storage:get_string('world_layout_version')=='6')
+  assert((tonumber(api.storage:get_string('world_layout_version')) or 0)>=6)
   local pos=api.world_buildings.positions; assert(api.site.barn.x==pos.barn.x and api.chapter.positions.ada.x==pos.ada.x)
   core.emerge_area({x=570,y=-27,z=738},{x=676,y=73,z=838},function(_,action,left)
    assert(action~=core.EMERGE_ERRORED and action~=core.EMERGE_CANCELLED)
@@ -247,6 +247,7 @@ elseif phase=='legacy_read' then
   local s=api.load('legacy_opening')
   assert(not api.grounded_mode and api.site.barn.x==-8 and api.site.barn.y==221)
   assert(api.storage:get_string('world_layout_version')=='')
+  assert(api.chapter.positions.dust.x==70 and api.chapter.positions.mine_gate.x==205)
   assert(s.map_fragments['1'] and s.flags.saddle_found and not api.world_sites.placed('ranch'))
   finish()
  end)
@@ -261,6 +262,7 @@ elseif phase=='legacy_grounded_read' then
  core.after(0,function()
   assert(api.grounded_mode and api.storage:get_string('grounded_v1')=='1')
   assert(api.storage:get_string('world_layout_version')=='')
+  assert(api.chapter.positions.dust.x==70 and api.chapter.positions.mine_gate.x==205 and not api.late_mode())
   local s=api.load('opening_test'); assert(s.flags.jesse_briefed and s.map_fragments['2'])
   api.ensure_grounded_site('ranch'); assert(api.storage:get_string('world_layout_version')=='')
   finish()
@@ -270,7 +272,7 @@ elseif phase=='integration_read' then
  core.after(0,function()
   local s=api.load('opening_test'); local pos=api.world_buildings.positions
   assert(api.grounded_mode and api.storage:get_string('grounded_v1')=='1')
-  assert(api.storage:get_string('world_layout_version')=='6')
+  assert((tonumber(api.storage:get_string('world_layout_version')) or 0)>=6)
   assert(s.unlocked['2'] and s.unlocked['3'] and s.flags.jesse_briefed and s.map_fragments['2'])
   assert(api.site.ada.x==pos.ada.x and api.chapter.positions.jesse.x==pos.jesse.x)
   finish()

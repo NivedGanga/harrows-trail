@@ -62,14 +62,22 @@ local function ada(p,s,reaction)
  prompt(p,'ada',(reaction or '')..' Crane was a railroad detective. Jesse rode with him and knows his hideouts. '..gates[3].text..' Search the abandoned payroll box near the office or earn gold on ranch deliveries.', 'bail;Confirm bail')
 end
 local function journal(s)
+ local late=ctx.late and ctx.late()
  if ctx.midgame and ctx.midgame() and s.flags.arrived then
   if not s.unlocked['5'] then return 'Follow the walking trail to Iron Pass. Lead your horse or leave it safely where the trail narrows. '..gates[5].text end
   if not s.flags.rubble1 then return 'Clear the western obstruction inside the timber shaft.' end
   if not s.flags.rubble2 then return 'Follow the shaft to its eastern obstruction and clear it.' end
   if not s.map_fragments['3'] then return 'Descend to Silver Spur and search the assay office. The optional map desk and safe are inside.' end
-  if not s.flags.station_breached then return 'At Silver Spur’s assay office, use /stagecoach station to reach the temporary station site. Place the charge at the station, then trigger it separately. '..gates[6].text end
-  if not s.unlocked['7'] then return 'From the station use /stagecoach mine. Fill a map of the badlands near the Ghost Mine (560, 22, 844), then approach its entrance. The filled map is retained.' end
+  if not s.flags.station_breached then return late and 'Follow the railway trail back through the pass to Crane’s Plains depot. Choose a charge position at the planning desk, then trigger it at the barricade controls. '..gates[6].text or 'At Silver Spur’s assay office, use /stagecoach station to reach the temporary station site. Place the charge at the station, then trigger it separately. '..gates[6].text end
+  if not s.unlocked['7'] then return late and 'Crane fled toward the Ghost Mine. Follow the eastern trail and fill a map in the badlands near the mine entrance. The map is retained.' or 'From the station use /stagecoach mine. Fill a map of the badlands near the Ghost Mine (560, 22, 844), then approach its entrance. The filled map is retained.' end
   if not s.flags.ledger1 then return 'Investigate Nora’s trail at the Ghost Mine entrance, then search the timber office for ledger page 1.' end
+ end
+ if late and s.flags.ledger1 then
+  if not s.unlocked['8'] then return 'Follow the river trail to Amos at Bitter River. '..gates[8].text end
+  if not s.flags.ferry_crossed then return 'Speak with Amos about passage: pay, ask for a waiver if trusted, or clear the snagged ferry line. Then cross the ferry deck to the hideout.' end
+  if not s.flags.hideout_searched then return 'Cross the channel to Crane’s stilt hideout and search it.' end
+  if not s.flags.ledger2 then return 'Read the ledger inside the river hideout.' end
+  if ctx.finale_journal then return ctx.finale_journal(s) end
  end
  if s.flags.arrived then
   if not s.unlocked['5'] then return 'Nora was taken toward Iron Pass. Go east to the pass marker. '..gates[5].text end
@@ -136,7 +144,9 @@ local function interact(kind,pos,p,s)
    elseif s.flags.ferry_crossed then message(p,'Amos Reed','The way to the hideout east is open.')
    else prompt(p,kind,'Passage costs 3 gold ingots (provisional), or ask for a waiver if trusted. You can instead clear the snagged line east.','pay;Pay 3 gold','waiver;Ask for waiver') end
   elseif kind=='snag' then
-   if not s.unlocked['8'] then message(p,'Ferry line','Speak to Amos first.') else s.flags.ferry_crossed=true; s.flags.ferry_method='snag'; save(name); message(p,'Ferry line','You free the snagged line. Amos ferries you across; search the hideout east.') end
+   if not s.unlocked['8'] then message(p,'Ferry line','Speak to Amos first.')
+   elseif mid and ctx.late and ctx.late() and not ctx.clear_snag() then message(p,'Ferry line','The line is protected or has been replaced. Nothing was changed; speak with Amos about the other passage options.')
+   else s.flags.ferry_crossed=true; s.flags.ferry_method='snag'; save(name); message(p,'Ferry line','You free the snagged line. Amos ferries you across; search the hideout east.') end
   elseif kind=='hideout' then
    if not s.flags.ferry_crossed then message(p,'River hideout','Arrange passage with Amos or clear the snagged ferry line first.') else s.flags.hideout_searched=true; save(name); message(p,'River hideout','Nora’s recent note points deeper into the hideout. Search the ledger desk east.') end
   elseif kind=='ledger2' then
@@ -197,8 +207,14 @@ local function receive(p,form,f)
  if kind=='pass' and f.start5 then
   if unlock(p,s,5) then message(p,'Iron Pass','Clear the western and eastern shaft obstructions, then search the assay office.') else message(p,'Iron Pass','Missing equipment. '..gates[5].text) end
  elseif kind=='station' and (f.left or f.right) and s.map_fragments['3'] then
-  if unlock(p,s,6) then s.flags.charge_side=f.left and 'left' or 'right'; save(name); message(p,'Crane’s Station','Charge placed on the '..s.flags.charge_side..' side. Trigger it at the barricade when ready.') else message(p,'Crane’s Station','Missing TNT. '..gates[6].text) end
+  local side=f.left and 'left' or 'right'
+  if ctx.late and ctx.late() and not ctx.can_charge(side) then message(p,'Crane’s Station','The selected charge position is obstructed or protected. No TNT was taken.');return end
+  if unlock(p,s,6) then
+   if ctx.late and ctx.late() then assert(ctx.place_charge(side),'charge placement changed during confirmation') end
+   s.flags.charge_side=side;save(name);message(p,'Crane’s Station','Charge placed on the '..s.flags.charge_side..' side. Trigger it at the barricade when ready.')
+  else message(p,'Crane’s Station','Missing TNT. '..gates[6].text) end
  elseif kind=='charge' and f.trigger and s.unlocked['6'] and not s.flags.station_breached then
+  if ctx.late and ctx.late() and not ctx.breach() then message(p,'Barricade','The marked barricade or charge is protected, or the charge is missing. Return to the station desk to replace the reserved charge without paying again.');return end
   s.flags.station_breached=true; save(name); message(p,'The breach','The barricade breaks. Crane escapes with Nora; his abandoned note points to the Ghost Mine east.')
  elseif kind=='mine_gate' and f.start7 and s.flags.station_breached then
   if unlock(p,s,7) then message(p,'Ghost Mine','Investigate the tracks, then search the mine desk.') else message(p,'Ghost Mine','Missing map. '..gates[7].text) end
@@ -250,6 +266,7 @@ end
 local more_building=false
 local function ensure_more()
  if more_building or storage:get_string('sprint3_site')=='1' then return end
+ if ctx.late and ctx.late() then storage:set_string('sprint3_site','1');return end
  more_building=true
  core.emerge_area({x=136,y=220,z=-7},{x=260,y=225,z=7},function(_,action,left)
   if action==core.EMERGE_ERRORED or action==core.EMERGE_CANCELLED then more_building=false; return end

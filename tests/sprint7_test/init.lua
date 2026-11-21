@@ -48,6 +48,12 @@ local function run(i)
     local found=0;for _,obj in ipairs(core.get_objects_inside_radius({x=294,y=21,z=1500},0.4)) do local e=obj:get_luaentity();if e and e.name=='harrows_trail:mid_actor' and e.kind=='ferry' then found=found+1 end end
     assert(found==1,'Amos actor recovery failed or duplicated')
    end
+   if id=='widowmaker' then
+    for _,kind in ipairs({'mercer','nora','crane'}) do
+     local at=api.world_lategame.finale[kind];local light=core.get_node_light(vector.offset(at,0,1,0),0)
+     assert(light and light>=5,'tunnel encounter has insufficient night lighting: '..kind..' '..tostring(light))
+    end
+   end
   end
   run(i+1)
  end)

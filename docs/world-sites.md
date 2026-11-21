@@ -28,11 +28,11 @@ The grounded layout uses seed `1730940739604968791` with Luanti 5.17.0 and Minec
 
 The long walking corridor from Dry Gulch follows existing terrain around water. Guidance allows short detours around generated vegetation. The recorded corridor is tested in `tests/sprint6_route.json`; runtime guidance is in `world_midgame_route.lua`. This is walking evidence, not a horse-riding or graphical playtest. Narrow forest and mountain sections may require dismounting.
 
-For the interim Sprint 6 layout, `/stagecoach station` at the Silver Spur assay office reaches the earlier elevated station after fragment 3 is found. After the breach, `/stagecoach mine` at the station reaches the grounded Ghost Mine; `/stagecoach silver` provides a return. Landing checks must pass before moving the player or the native mounted horse. Grounding the station and later locations belongs to Sprint 7.
+For existing layout-version-6 worlds, `/stagecoach station` at the Silver Spur assay office reaches the earlier elevated station after fragment 3 is found. After the breach, `/stagecoach mine` at the station reaches the grounded Ghost Mine; `/stagecoach silver` provides a return. Landing checks must pass before moving the player or the native mounted horse. New layout-version-7 worlds instead follow the grounded trails and do not use these temporary links.
 
-New grounded worlds have layout version 6. Earlier unversioned grounded worlds and marker-era worlds retain their original positions, progression and stagecoach connection. No active save is opened or migrated by the tests. Placement rejects occupied or protected construction space, nearby village POIs, metadata, timers, objects, unsuitable terrain and recorded player edits. A partial placement after a crash is preserved and refused rather than repaired automatically. Direct changes made by other mods without player callbacks are not recorded by the touched-site safeguard.
+New grounded worlds have layout version 7; version-6 worlds retain their existing layout and temporary station connections. Earlier unversioned grounded worlds and marker-era worlds retain their original positions, progression and stagecoach connection. No active save is opened or migrated by the tests. Placement rejects occupied or protected construction space, nearby village POIs, metadata, timers, objects, unsuitable terrain and recorded player edits. A partial placement after a crash is preserved and refused rather than repaired automatically. Direct changes made by other mods without player callbacks are not recorded by the touched-site safeguard.
 
-## Sprint 7 construction plans — not active yet
+## Sprint 7 sites — active in layout version 7
 
 | Site | Centre X/Y/Z | Construction |
 |---|---|---|
@@ -40,4 +40,20 @@ New grounded worlds have layout version 6. Earlier unversioned grounded worlds a
 | Bitter River | 300 / 21 / 1500 | Swampland shade/hut, shallow channel, docks and flat ferry deck |
 | Widowmaker | 499 / 32 / 1605 | Supported cut in exposed mountain rock within the Forest hillside; stairs and rails |
 
-The plans are in `world_lategame.lua`. Terrain changes require explicit per-target permission and a per-site native-node whitelist; normal site rules remain unchanged. Bitter River's channel is constructed inside the footprint because this Swamp patch had no open water in the survey. Widowmaker's floor spans a natural cavity between checked rock anchors; its roof and narrow approach preserve the tree trunks. The construction test records and checks the outer boundary across restart. These plans are currently exercised only in disposable tests; activation and travel integration are still in progress.
+The plans are in `world_lategame.lua`. Terrain changes require explicit per-target permission and a per-site native-node whitelist; normal site rules remain unchanged. Bitter River's channel is constructed inside the footprint because this Swamp patch had no open water in the survey. Widowmaker's floor spans a natural cavity between checked rock anchors; its roof and narrow approach preserve the tree trunks. The construction test records and checks the outer boundary across restart. New version-7 worlds activate these plans on approach. Earlier worlds are not migrated. The scripted breach removes only site-owned barricade pieces and does not apply an unrestricted terrain blast. Ada handles the verdict and epilogue at her existing Red Mesa office. The tunnel wall lanterns have server-tested night light levels; rendering and actual riding remain unverified.
+
+| Late interaction | X | Y | Z |
+|---|---:|---:|---:|
+| Station planning desk | -295 | 20 | -204 |
+| Charge controls | -299 | 19 | -222 |
+| Amos | 294 | 21 | 1500 |
+| Snagged line | 297 | 22 | 1500 |
+| River hideout search | 304 | 23 | 1495 |
+| River ledger | 308 | 23 | 1496 |
+| Widowmaker entrance support | 496 | 32 | 1600 |
+| Mercer | 499 | 32 | 1604 |
+| Nora | 497 | 32 | 1608 |
+| Crane | 501 | 32 | 1610 |
+| Ada: verdict and epilogue | 614 | 21 | 788 |
+
+`world_lategame_routes.lua` provides advisory guidance for six corridors. `tests/sprint7_routes.json` records the surveyed routes, and the route checker requires continuous walking detours around local generated obstacles. The tunnel stairs were also checked with the engine pathfinder and explicit headroom checks. This does not establish horse clearance throughout the forest, mine or tunnel; dismount where the trail narrows.

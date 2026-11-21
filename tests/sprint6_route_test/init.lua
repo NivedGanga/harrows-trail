@@ -1,10 +1,12 @@
 core.after(0,function()
- local file=assert(io.open(core.get_modpath('sprint6_route_test')..'/path.json','r'));local path=assert(core.parse_json(file:read('*a')));file:close()
- local function validate()
+ local file=assert(io.open(core.get_modpath('sprint6_route_test')..'/path.json','r'));local data=assert(core.parse_json(file:read('*a')));file:close()
+ local paths={}
+ if data[1] then paths[1]={name='midgame',points=data} else for name,points in pairs(data) do paths[#paths+1]={name=name,points=points} end;table.sort(paths,function(a,b)return a.name<b.name end) end
+ local function validate(path,label)
  local function clear(p)
   core.load_area({x=p.x,y=p.y-1,z=p.z},{x=p.x,y=p.y+1,z=p.z})
   local n=core.get_node({x=p.x,y=p.y-1,z=p.z});local d=core.registered_nodes[n.name]
-  if not d or not d.walkable or d.liquidtype and d.liquidtype~='none' then return false end
+  if not d or not d.walkable or core.get_item_group(n.name,'fence')>0 or core.get_item_group(n.name,'wall')>0 or d.liquidtype and d.liquidtype~='none' then return false end
   for yy=p.y,p.y+1 do local v=core.registered_nodes[core.get_node({x=p.x,y=yy,z=p.z}).name];if not v or v.walkable or v.liquidtype and v.liquidtype~='none' then return false end end
   return true
  end
@@ -37,18 +39,18 @@ core.after(0,function()
    current=found
   end
  end
- core.safe_file_write(core.get_worldpath()..'/route-verified.json',core.write_json(walked))
- core.log('action',('[route_validation] corridor_failures=0 recorded_cells=%d raw_blocked=%d verified_walking_cells=%d riding_unverified=true'):format(#path,raw_blocked,#walked))
- core.request_shutdown('validation done',false,0)
+ core.safe_file_write(core.get_worldpath()..'/route-verified-'..label..'.json',core.write_json(walked))
+ core.log('action',('[route_validation] corridor_failures=0 path=%s recorded_cells=%d raw_blocked=%d verified_walking_cells=%d riding_unverified=true'):format(label,#path,raw_blocked,#walked))
  end
  local columns,ordered={},{}
- for _,p in ipairs(path) do
+ for _,route in ipairs(paths) do for _,p in ipairs(route.points) do
   local x,z=math.floor(p.x/16)*16,math.floor(p.z/16)*16;local key=x..','..z
   local c=columns[key]
   if not c then c={x=x,z=z,miny=p.y-4,maxy=p.y+4};columns[key]=c;ordered[#ordered+1]=c else c.miny=math.min(c.miny,p.y-4);c.maxy=math.max(c.maxy,p.y+4) end
  end
+ end
  local function emerge(i)
-  local c=ordered[i];if not c then return validate() end
+  local c=ordered[i];if not c then for _,route in ipairs(paths) do validate(route.points,route.name) end;core.log('action','[route_validation] paths_passed='..#paths);core.request_shutdown('validation done',false,0);return end
   core.emerge_area({x=c.x,y=c.miny,z=c.z},{x=c.x+15,y=c.maxy,z=c.z+15},function(_,action,left)
    assert(action~=core.EMERGE_ERRORED and action~=core.EMERGE_CANCELLED,'route generation failed')
    if left==0 then emerge(i+1) end

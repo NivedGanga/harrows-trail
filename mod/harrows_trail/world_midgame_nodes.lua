@@ -39,6 +39,9 @@ return function(interact)
   if core.get_node(def.anchor).name==name then core.set_node(def.anchor,{name=name..'_cleared'}) end
   for dy=0,1 do local p=vector.offset(def.door,0,dy,0);if core.get_node(p).name==name then core.set_node(p,{name='air'}) end end
  end
+ core.register_node('harrows_trail:story_charge',{description='Placed blasting charge',tiles=assert(core.registered_nodes['mcl_tnt:tnt']).tiles,
+  groups={unbreakable=1,not_in_creative_inventory=1},diggable=false,
+  on_rightclick=function(pos,_,p) interact('charge',pos,p);return p:get_wielded_item() end})
  core.register_lbm({name='harrows_trail:mid_actors',nodenames={'harrows_trail:mid_dust','harrows_trail:mid_gulch','harrows_trail:mid_ruth_gulch','harrows_trail:mid_dutch','harrows_trail:mid_ferry'},run_at_every_load=true,
   action=function(pos,node) local kind=node.name:match('mid_(.+)$');if actors[kind] then spawn(pos,kind) end end})
  local function ensure_actors(buildings)

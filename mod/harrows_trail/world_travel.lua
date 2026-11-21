@@ -16,6 +16,7 @@ return function(ctx)
  end
  local function travel(name,param)
   local player=core.get_player_by_name(name); local s=ctx.states[name]
+  if ctx.late and ctx.late() then return false,'Travel along the railway and river trails. Use /trail for your current objective.' end
   if not ctx.grounded or not player or not s or not s.flags.jesse_briefed then return false,'The stagecoach opens after Jesse explains the Dust Road.' end
   local pos=player:get_pos(); local source,target
   local mid=ctx.midgame and ctx.midgame();local destination

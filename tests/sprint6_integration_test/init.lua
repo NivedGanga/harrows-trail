@@ -4,6 +4,10 @@ local function finish()
  core.log('action','[sprint6_integration] PASS '..phase)
  core.request_shutdown('integration complete',false,0)
 end
+if phase=='bootstrap' then
+ core.after(0,function()api.storage:set_string('world_layout_version','6');finish()end)
+ return
+end
 if phase=='read' then
  core.after(0,function()
   assert(api.midgame_mode() and api.storage:get_string('world_layout_version')=='6')

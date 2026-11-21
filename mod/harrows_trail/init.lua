@@ -3,6 +3,7 @@ local world_sites = dofile(core.get_modpath("harrows_trail") .. "/world_sites.lu
 local world_buildings = dofile(core.get_modpath("harrows_trail") .. "/world_buildings.lua")
 local world_midgame = dofile(core.get_modpath("harrows_trail") .. "/world_midgame.lua")
 local world_lategame = dofile(core.get_modpath("harrows_trail") .. "/world_lategame.lua")
+local late_routes = dofile(core.get_modpath("harrows_trail") .. "/world_lategame_routes.lua")
 local midgame_route = dofile(core.get_modpath("harrows_trail") .. "/world_midgame_route.lua")
 local grant = dofile(core.get_modpath("harrows_trail") .. "/inventory.lua")
 local states = {}
@@ -83,7 +84,7 @@ horse_def.on_die = function(horse, ...)
 	recover_horse_saddle(horse)
 	if native_horse_death then return native_horse_death(horse, ...) end
 end
-local chapter
+local chapter,finale
 local grounded_mode
 local function journal(s)
 	if chapter and s.flags.choice then return chapter.journal(s) end
@@ -124,6 +125,9 @@ local function interact(kind, pos, player)
 	local name = player:get_player_name()
 	local s = states[name]
 	if not s then return end
+ if kind=='ada' and grounded_mode and (tonumber(storage:get_string('world_layout_version')) or 0)>=7 and s.flags.crane_outcome and finale then
+  finale.interact(s.verdict and s.verdict~='' and 'ending' or 'verdict',player,s);return
+ end
 	if chapter and chapter.interact(kind, pos, player, s) then return end
 	if kind == "stagecoach" then
 		message(player, "Stagecoach desk", "After Jesse explains the route, use /stagecoach near this desk to travel to the temporary Dust Road and use it there to return. Your mounted native horse can travel with you.")
@@ -267,8 +271,11 @@ core.register_on_player_receive_fields(receive_fields)
 grounded_mode = storage:get_string('grounded_v1') == '1' or
  (core.settings:get_bool('harrows_trail_grounded',false) and storage:get_string('site_ready') ~= '1')
 local function midgame_mode()
- return grounded_mode and (storage:get_string('world_layout_version')=='6' or
-  storage:get_string('site_ready')~='1' and storage:get_string('grounded_v1')~='1')
+ return grounded_mode and ((tonumber(storage:get_string('world_layout_version')) or 0)>=6 or
+  storage:get_string('world_layout_version')=='' and storage:get_string('site_ready')~='1' and storage:get_string('grounded_v1')~='1')
+end
+local function late_mode()
+ return grounded_mode and ((tonumber(storage:get_string('world_layout_version')) or 0)>=7 or storage:get_string('world_layout_version')=='' and storage:get_string('site_ready')~='1' and storage:get_string('grounded_v1')~='1')
 end
 local site = {
 	spawn = {x = 0, y = 222, z = 3},
@@ -332,10 +339,16 @@ local function apply_grounded_positions()
   for _,key in ipairs({'ada','jesse','ruth','cache','delivery','depot'}) do chapter.positions[key]=positions[key] end
   chapter.positions.recovery=positions.tack
   if midgame_mode() then for key,pos in pairs(world_midgame.positions) do chapter.positions[key]=pos end end
+  if late_mode() then for key,pos in pairs(world_lategame.positions) do chapter.positions[key]=pos end end
+ end
+ if finale and late_mode() then
+  for key,pos in pairs(world_lategame.finale) do finale.positions[key]=pos end
+  finale.positions.verdict=positions.ada;finale.positions.ending=positions.ada
  end
 end
 local function ensure_grounded_site(id)
  if not grounded_mode or ground_busy[id] then return end
+ if world_lategame.sites[id] and not late_mode() then return end
  local def=world_sites.registry[id]; local y=def and def.base_y
  if not def or world_sites.placed(id) and (id~='ranch' or storage:get_string('site_ready')=='1') then return end
  if not world_sites.placed(id) and core.get_mapgen_setting('seed')~='1730940739604968791' then
@@ -355,7 +368,7 @@ local function ensure_grounded_site(id)
    end
    if left~=0 then return end
    local layout,zones
-   if world_midgame.sites[id] then layout,zones=world_midgame.layout(id) else layout,zones=world_buildings.layout(id) end
+   if world_lategame.sites[id] then layout,zones=world_lategame.layout(id) elseif world_midgame.sites[id] then layout,zones=world_midgame.layout(id) else layout,zones=world_buildings.layout(id) end
    local ok,reason=world_sites.place(id,y,layout,zones)
    ground_busy[id]=nil
    if not ok then
@@ -375,7 +388,7 @@ local function ensure_grounded_site(id)
     -- Tag a genuinely new world before publishing its ready flag, so later
     -- placement can opt in without retroactively claiming old terrain.
     if storage:get_string('world_layout_version')=='' and storage:get_string('grounded_v1')~='1' and storage:get_string('site_ready')~='1' then
-     storage:set_string('world_layout_version','6')
+     storage:set_string('world_layout_version','7')
     end
     storage:set_string('grounded_v1','1'); storage:set_string('site',core.write_json(site)); storage:set_string('site_ready','1')
     apply_grounded_positions()
@@ -407,6 +420,16 @@ local function update_grounded(player)
    local def=world_sites.registry[id];local d=(pos.x-def.center.x)^2+(pos.z-def.center.z)^2
    if d<=def.radius^2 then
     if world_sites.placed(id) then world_midgame_nodes.ensure_actors(buildings) else ensure_grounded_site(id) end
+   end
+  end
+ end
+ if late_mode() then
+  for id in pairs(world_lategame.sites) do
+   local def=world_sites.registry[id];local d=(pos.x-def.center.x)^2+(pos.z-def.center.z)^2
+   if d<=def.radius^2 then
+    if not world_sites.placed(id) then ensure_grounded_site(id)
+    elseif id=='bitter_river' then world_midgame_nodes.ensure_actors({{pos={x=294,y=21,z=1500},half=2,actor='ferry'}})
+    elseif id=='widowmaker' and finale then finale.ensure_actors() end
    end
   end
  end
@@ -536,6 +559,40 @@ local function midgame_target(player,s)
  elseif not s.flags.mine_clue then return 'Ghost Mine tracks',p.mine_clue
  elseif not s.flags.ledger1 then return 'Ghost Mine ledger',p.ledger1 end
 end
+local function late_target(player,s)
+ if not late_mode() or not s.flags.arrived then return end
+ local p,f=chapter.positions,s.flags
+ local function follow(key,label,destination)
+  local path=assert(late_routes[key])
+  if f.late_route~=key then f.late_route=key;f.late_route_step=1;save(player:get_player_name()) end
+  local index=math.max(1,math.min(#path,math.floor(tonumber(f.late_route_step) or 1)));local before=index
+  if vector.distance(player:get_pos(),destination)<=12 then index=#path
+  elseif vector.distance(player:get_pos(),path[index])>64 then
+   local nearest,distance=index,64
+   for i,point in ipairs(path) do local d=vector.distance(player:get_pos(),point);if d<distance then nearest,distance=i,d end end
+   index=nearest
+  end
+  while index<#path and vector.distance(player:get_pos(),path[index])<=8 do index=index+1 end
+  if before~=index then f.late_route_step=index;save(player:get_player_name()) end
+  if index==#path and vector.distance(player:get_pos(),path[index])<=8 then return label,destination end
+  return label,path[index]
+ end
+ if f.rubble2 and not s.map_fragments['3'] then return follow('assay','Hill trail to Silver Spur',p.assay) end
+ if not s.map_fragments['3'] then return end
+ if not f.station_breached then return follow('station','Railway trail to the depot',p.station) end
+ if not s.unlocked['7'] then return follow('mine','Trail to the Ghost Mine',p.mine_gate) end
+ if not f.mine_clue then return 'Nora’s trail beside the rails',p.mine_clue end
+ if not f.ledger1 then return 'Mine office ledger',p.ledger1 end
+ if not s.unlocked['8'] then return follow('river','River trail to Amos',p.ferry) end
+ if not f.ferry_crossed then return 'Amos: passage or snagged line',p.ferry end
+ if not f.hideout_searched then return 'Crane’s river hideout',p.hideout end
+ if not f.ledger2 then return 'Hideout ledger',p.ledger2 end
+ if not s.unlocked['9'] then return follow('tunnel','Hill trail to Widowmaker',finale.positions.gate) end
+ if not f.mercer_outcome then return 'Mercer in the first chamber',finale.positions.mercer end
+ if not f.nora_freed then return 'Nora inside the tunnel',finale.positions.nora end
+ if not f.crane_outcome then return 'Crane at the back of the tunnel',finale.positions.crane end
+ return follow('returning',s.verdict and s.verdict~='' and 'Ada: epilogue' or 'Return to Ada at Red Mesa',finale.positions.verdict)
+end
 local elapsed = 0
 local opening_huds = {}
 core.register_on_leaveplayer(function(p) opening_huds[p:get_player_name()]=nil end)
@@ -552,6 +609,7 @@ core.register_globalstep(function(dtime)
 		local name=player:get_player_name(); local s = states[name]
 		if grounded_mode and s then
 			local label,target=opening_target(player,s)
+   if not label then label,target=late_target(player,s) end
    if not label then label,target=midgame_target(player,s) end
 			local signature=target and label..':'..target.x..':'..target.y..':'..target.z
 			local previous=opening_huds[name]
@@ -574,19 +632,25 @@ if core.settings:get_bool("harrows_trail_test", false) then
 		grant = grant, starter = starter, recover_horse_saddle = recover_horse_saddle, deliver_saddles = deliver_saddles}
  harrows_trail_test.world_lategame=world_lategame
  harrows_trail_test.midgame_mode=midgame_mode;harrows_trail_test.midgame_target=midgame_target
+ harrows_trail_test.late_mode=late_mode
+ harrows_trail_test.late_target=late_target
 end
 
 chapter = dofile(core.get_modpath("harrows_trail") .. "/chapter.lua")({
- states=states, save=save, storage=storage, message=message, grant=grant, riding=is_riding, grounded=grounded_mode, midgame=midgame_mode, clear_rubble=world_midgame_nodes.clear_rubble, recover=function(p) interact("tack", site.tack, p) end})
+ states=states, save=save, storage=storage, message=message, grant=grant, riding=is_riding, grounded=grounded_mode, midgame=midgame_mode, late=late_mode, clear_rubble=world_midgame_nodes.clear_rubble,
+ can_charge=world_lategame.can_charge,place_charge=world_lategame.place_charge,breach=world_lategame.breach,clear_snag=world_lategame.clear_snag,
+ recover=function(p) interact("tack", site.tack, p) end})
 if core.settings:get_bool("harrows_trail_test", false) then harrows_trail_test.chapter = chapter end
 if grounded_mode then apply_grounded_positions() end
 local world_travel = dofile(core.get_modpath("harrows_trail") .. "/world_travel.lua")({
  grounded=grounded_mode,states=states,storage=storage,riding=is_riding,
  midgame=midgame_mode,ensure=ensure_grounded_site,chapter=chapter,sites=world_sites,
+ late=late_mode,
  desk=world_buildings.positions.stagecoach,dust_marker=chapter.positions.dust})
 if core.settings:get_bool("harrows_trail_test", false) then harrows_trail_test.world_travel=world_travel end
 
-local finale = dofile(core.get_modpath("harrows_trail") .. "/finale.lua")({
- states=states, save=save, storage=storage, message=message, grant=grant, chapter=chapter})
+finale = dofile(core.get_modpath("harrows_trail") .. "/finale.lua")({
+ states=states, save=save, storage=storage, message=message, grant=grant, chapter=chapter,late=late_mode})
+if grounded_mode then apply_grounded_positions() end
 chapter.context.finale_journal = finale.journal
 if core.settings:get_bool("harrows_trail_test", false) then harrows_trail_test.finale = finale end

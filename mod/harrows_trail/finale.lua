@@ -15,6 +15,14 @@ local function show(p,kind,title,text,choices)
  core.show_formspec(p:get_player_name(),'harrows_trail:finale','formspec_version[4]size[10,6]label[0.5,0.4;'..core.formspec_escape(title)..']textarea[0.5,1;9,3.8;;;'..core.formspec_escape(text)..']'..buttons..(buttons=='' and 'button_exit[3.5,5;3,0.7;close;Close]' or ''))
 end
 local function journal(s)
+ if ctx.late and ctx.late() then
+  if not s.unlocked['9'] then return 'Follow the hill trail to Widowmaker’s supported stone entrance. '..chapter.gates[9].text..' Ruth’s supply desk and travelers offering optional help are near the entrance.' end
+  if not s.flags.mercer_outcome then return 'Meet Mercer in the first tunnel chamber. Talk him down or face him in a duel.' end
+  if not s.flags.nora_freed then return 'Mercer no longer blocks the way. Free Nora further inside the tunnel.' end
+  if not s.flags.crane_outcome then return 'Confront Crane at the back of the tunnel, disarm him, and decide his fate.' end
+  if not s.verdict or s.verdict=='' then return 'Return along the trail to Ada at Red Mesa’s sheriff’s office. Tell her Crane’s fate and decide the verdict.' end
+  return 'Speak to Ada at Red Mesa’s sheriff’s office to settle the optional cache and read the epilogue.'
+ end
  if not s.unlocked['9'] then return 'Follow the trail east to Widowmaker Tunnel. '..chapter.gates[9].text..' Ruth’s supply desk there offers replacements for gold. Three nearby one-time good deeds can improve your standing.' end
  if not s.flags.mercer_outcome then return 'Meet Mercer at the tunnel. Force him to surrender or face him in a duel.' end
  if not s.flags.nora_freed then return 'Mercer no longer blocks the way. Free Nora at the next marker.' end
@@ -236,8 +244,9 @@ core.register_lbm({name='harrows_trail:finale_actors', nodenames={'harrows_trail
  run_at_every_load=true, action=function(pos,node) ensure_actor(pos,node.name:match('finale_(.+)$')) end})
 for kind,pos in pairs(positions) do
  local character=kind=='mercer' or kind=='nora' or kind=='crane' or kind=='verdict' or kind=='ending'
+ local texture=kind=='gate' and 'default_stone.png' or kind=='supplies' and 'mcl_barrels_barrel_side.png' or 'default_bookshelf.png'
  core.register_node('harrows_trail:finale_'..kind,{description=kind..' (right-click)',
-  tiles={'mcl_core_sandstone_normal.png'}, drawtype=character and 'airlike' or 'normal',
+  tiles={texture}, drawtype=character and 'airlike' or 'normal',
   pointable=not character, walkable=not character, paramtype='light', groups={unbreakable=1}, diggable=false,
   on_construct=function(pos) if character then ensure_actor(pos,kind) end end,
   on_rightclick=function(_,_,p) local s=states[p:get_player_name()]; if s then interact(kind,p,s) end; return p:get_wielded_item() end})
@@ -245,6 +254,7 @@ end
 local building=false
 local function ensure()
  if building or storage:get_string('sprint4_site')=='1' then return end
+ if ctx.late and ctx.late() then storage:set_string('sprint4_site','1');return end
  building=true
  core.emerge_area({x=261,y=220,z=-7},{x=312,y=225,z=7},function(_,action,left)
   if action==core.EMERGE_ERRORED or action==core.EMERGE_CANCELLED then building=false; return end
@@ -258,5 +268,11 @@ local function ensure()
  end)
 end
 core.register_on_joinplayer(ensure)
-return {positions=positions,interact=interact,receive=receive,journal=journal,reasons=reasons,epilogue=epilogue,scene=scene,ensure=ensure}
+local function ensure_actors()
+ for kind,pos in pairs(positions) do
+  local node=core.get_node_or_nil(pos)
+  if cast[kind] and node and node.name=='harrows_trail:finale_'..kind then ensure_actor(pos,kind) end
+ end
+end
+return {positions=positions,interact=interact,receive=receive,journal=journal,reasons=reasons,epilogue=epilogue,scene=scene,ensure=ensure,ensure_actors=ensure_actors}
 end

@@ -70,10 +70,64 @@ local function layout(id)
    end
   end
   for z=1600,1615 do add(499,32,z,'mcl_minecarts:rail') end
+  for _,z in ipairs({1602,1608,1614}) do add(495,33,z,'mcl_lanterns:lantern_floor') end
+  for _,z in ipairs({1606,1612}) do add(503,33,z,'mcl_lanterns:lantern_floor') end
   for kind,p in pairs(finale) do add(p.x,p.y,p.z,'harrows_trail:finale_'..kind) end
  end
  local nodes={};for _,entry in pairs(cells) do nodes[#nodes+1]=entry end
  table.sort(nodes,function(a,b)local p,q=a.pos,b.pos;if p.x~=q.x then return p.x<q.x elseif p.z~=q.z then return p.z<q.z else return p.y<q.y end end)
  return nodes,zones
 end
-return {sites=sites,positions=positions,finale=finale,layout=layout}
+local pads={left={x=-298,y=18,z=-223},right={x=-296,y=18,z=-223}}
+local function owned(pos,owner)
+ return core.get_meta(pos):get_string('harrows_site_owner')==owner
+end
+local function can_charge(side)
+ local pos=pads[side];if not pos then return false end
+ local node=core.get_node_or_nil(pos)
+ if not node or core.is_protected(pos,'') or core.get_node_timer(pos):is_started() then return false end
+ if node.name~='air' and not (node.name=='harrows_trail:story_charge' and owned(pos,'station:charge')) then return false end
+ local meta=core.get_meta(pos):to_table()
+ if meta.fields and meta.fields.harrows_site_owner and meta.fields.harrows_site_owner~='station:charge' then return false end
+ for k in pairs(meta.fields or {}) do if k~='harrows_site_owner' then return false end end
+ if next(meta.inventory or {}) then return false end
+ if #core.get_objects_in_area(vector.offset(pos,-0.5,-0.5,-0.5),vector.offset(pos,0.5,0.5,0.5))>0 then return false end
+ for _,other in pairs(pads) do if owned(other,'station:charge') and core.is_protected(other,'') then return false end end
+ return true
+end
+local function place_charge(side)
+ if not can_charge(side) then return false end
+ for _,p in pairs(pads) do
+  if core.get_node(p).name=='harrows_trail:story_charge' and owned(p,'station:charge') then core.set_node(p,{name='air'}) end
+ end
+ core.set_node(pads[side],{name='harrows_trail:story_charge'});core.get_meta(pads[side]):set_string('harrows_site_owner','station:charge')
+ return true
+end
+local function can_breach()
+ local charge=false
+ for _,p in pairs(pads) do if core.get_node(p).name=='harrows_trail:story_charge' and owned(p,'station:charge') then if core.is_protected(p,'') then return false end;charge=true end end
+ if not charge then return false end
+ for x=-298,-296 do for y=18,19 do local p={x=x,y=y,z=-222};if owned(p,'station:barricade') and core.is_protected(p,'') then return false end end end
+ return true
+end
+local function breach()
+ if not can_breach() then return false end
+ for x=-298,-296 do for y=18,19 do
+  local p={x=x,y=y,z=-222};local n=core.get_node(p);local def=core.registered_nodes[n.name]
+  if owned(p,'station:barricade') and (n.name=='mcl_fences:spruce_fence' or def and def._mcl_walls_name_root=='mcl_walls:cobble') then
+   core.set_node(p,{name=x==-297 and y==18 and 'mcl_minecarts:rail' or 'air'})
+  end
+ end end
+ for _,p in pairs(pads) do if core.get_node(p).name=='harrows_trail:story_charge' and owned(p,'station:charge') then core.set_node(p,{name='air'}) end end
+ local pos={x=-297,y=19,z=-222}
+ core.sound_play('tnt_explode',{pos=pos,gain=0.8,max_hear_distance=32},true)
+ core.add_particlespawner({amount=30,time=0.4,minpos=vector.offset(pos,-1,-1,0),maxpos=vector.offset(pos,1,1,0),minvel={x=-2,y=1,z=-2},maxvel={x=2,y=4,z=2},minexptime=0.3,maxexptime=0.8,minsize=2,maxsize=4,texture='default_cobble.png'})
+ return true
+end
+local function clear_snag()
+ local p=positions.snag;if core.is_protected(p,'') then return false end
+ local name=core.get_node(p).name
+ if name=='harrows_trail:mid_snag' then core.set_node(p,{name='air'});return true end
+ return name=='air'
+end
+return {sites=sites,positions=positions,finale=finale,layout=layout,pads=pads,can_charge=can_charge,place_charge=place_charge,can_breach=can_breach,breach=breach,clear_snag=clear_snag}
