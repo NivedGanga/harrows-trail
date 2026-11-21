@@ -683,9 +683,12 @@ chapter.context.finale_journal = finale.journal
 if core.settings:get_bool("harrows_trail_test", false) then harrows_trail_test.finale = finale end
 
 cast_layer = dofile(core.get_modpath('harrows_trail')..'/cast.lua')({skin=presentation.skin,states=states,save=save,chapter=chapter,finale=finale,late=late_mode,ada=world_buildings.positions.ada})
-if harrows_trail_test then harrows_trail_test.cast=cast_layer end
+if core.settings:get_bool("harrows_trail_test",false) then harrows_trail_test.cast=cast_layer end
 
-if harrows_trail_test then harrows_trail_test.reputation=reputation end
+if core.settings:get_bool("harrows_trail_test",false) then harrows_trail_test.reputation=reputation end
 
 local atmosphere=dofile(core.get_modpath("harrows_trail").."/atmosphere.lua")({assets=presentation})
-if harrows_trail_test then harrows_trail_test.atmosphere=atmosphere;harrows_trail_test.presentation=presentation end
+if core.settings:get_bool("harrows_trail_test",false) then harrows_trail_test.atmosphere=atmosphere;harrows_trail_test.presentation=presentation end
+
+local release=dofile(core.get_modpath("harrows_trail").."/release.lua")({states=states,storage=storage,sites=world_sites})
+if core.settings:get_bool("harrows_trail_test",false) then harrows_trail_test.release=release end

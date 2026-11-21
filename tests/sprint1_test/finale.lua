@@ -66,6 +66,7 @@ return function(api)
   s=api.load('branch_'..choice); api.states.finale_test=s; s.unlocked['9']=true; s.flags.mercer_outcome='spared'; s.flags.nora_freed=true; s.flags.promise_alive=true
   disarm(); use('crane',{[choice]=true})
   assert(s.flags.crane_outcome==(choice=='release' and 'released' or 'killed'))
+  if choice=='release' then assert(form:find('truce',1,true)) end
   assert(s.nora_trust==(choice=='release' and 55 or 45))
   use('verdict'); assert(form:find('Justice: locked',1,true))
   if choice=='kill_crane' then assert(form:find('Crane is dead',1,true)) end

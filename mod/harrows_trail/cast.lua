@@ -73,8 +73,8 @@ return function(ctx)
   return near,distance
  end
  local function tick(ent,p,s)
-  local visible=active(ent.kind,s)
-  ent.object:set_properties({is_visible=not not visible,pointable=not not visible})
+  local visible=not not active(ent.kind,s)
+  if ent.visible~=visible then ent.object:set_properties({is_visible=visible,pointable=visible});ent.visible=visible end
   if not visible then return end
   local routine,dx,dz=schedule(ent.role,core.get_timeofday(),s.flags)
   if ent.kind=='mercer' or ent.kind=='nora' or ent.kind=='crane' or ent.kind=='cameo' then routine='encounter';dx=0;dz=0 end
@@ -126,8 +126,8 @@ return function(ctx)
    local s=ctx.states[p:get_player_name()];if not s then return end
    if scene(p,'intro_'..self.role,self.role,intro[self.role]) then return end
    if self.role=='jesse' then core.chat_send_player(p:get_player_name(),'Jesse: Crane fled upriver. Nora left signs. Check the hideout ledger.')
-   elseif self.role=='crane' then core.chat_send_player(p:get_player_name(),'Crane: You will have to follow the trail, Harrow.')
-   else core.chat_send_player(p:get_player_name(),'Nora: We can go home when the truth is heard.') end
+   elseif self.role=='crane' then core.chat_send_player(p:get_player_name(),s.flags.crane_outcome and 'Crane: My weapon is gone. I will hear your final word here with Ada.' or 'Crane: You will have to follow the trail, Harrow.')
+   else core.chat_send_player(p:get_player_name(),s.verdict=='vengeance' and 'Nora: I need time, Eli. I will not ride with you today.' or s.verdict and 'Nora: Now we can think about home.' or 'Nora: We can go home when the truth is heard.') end
   end,
  })
  local cameos={}
@@ -165,7 +165,7 @@ return function(ctx)
      cameo('jesse','jesse',f.ledger1 and vector.offset(ctx.chapter.positions.ferry,0,0,-1) or nil,p)
      local home=ctx.ada
      cameo('nora_home','nora',f.crane_outcome and vector.offset(home,1,0,0) or nil,p)
-     cameo('custody','crane',f.crane_outcome=='captured' and vector.offset(home,-1,0,0) or nil,p)
+     cameo('custody','crane',(f.crane_outcome=='captured' or f.crane_outcome=='released' and not s.verdict) and vector.offset(home,-1,0,0) or nil,p)
     end
    end
   end

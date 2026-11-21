@@ -16,7 +16,7 @@ Harrow’s Trail is a story-driven Western adventure built as a Lua mod for **Lu
 | **Engine** | Luanti 5.17.0 |
 | **Game** | Mineclonia 0.124.1 |
 | **Implementation** | Lua mod; uses Mineclonia’s native horse and riding systems |
-| **Current phase** | Playable story prototype; grounded-world production in progress |
+| **Current phase** | RC1: implementation and automated/server QA; graphical/audio acceptance unverified |
 | **Roadmap** | 11 incremental sprints, from playable acts to release QA |
 
 ## The story
@@ -35,19 +35,21 @@ The pursuit leads to more than a final duel. What Eli learns, the promises he ke
 
 ## Current build status
 
-This repository contains the Acts 1–10 story implementation and a developing grounded-world layer. Automated Luanti server tests cover substantial progression and placement behavior. **It is not yet a visually verified, release-ready game.**
+RC1 implements Sprints 1–11: Acts 1–10, the connected grounded frontier, distinct visible cast/routines, reactive services, original assets/audio and seeded weather. Tests use disposable worlds. **Graphical play, actual riding, connected-client death/rejoin and listening quality remain unverified; manual verification was waived.**
 
-| Area | Current state |
+Install and backup instructions, controls, evidence, package commands and remaining limits are in the [RC1 release guide](docs/release-candidate.md). Changes are recorded in [release notes](docs/release-notes.md).
+
+| Area | RC1 evidence |
 |---|---|
-| **Story progression** | Acts 1–10 are implemented in the mod, including the Widowmaker finale, verdict branches, and epilogues. The finale has automated simulated-player coverage. |
-| **Opening world** | A fresh launcher world uses a surveyed seed and guarded, grounded Ranch and Red Mesa sites. The buildings, characters, route, and mounted travel still need graphical verification. |
-| **Mid-game world** | New layout-version-6 worlds use grounded Dust Flats, Dry Gulch, Ghost Mine, Iron Pass and Silver Spur, with ordered shaft clearing, a walking trail and checked bridges. Server integration and restart tests pass. Temporary stagecoach links reach the elevated station until Sprint 7. Graphics and actual riding remain unverified. |
-| **Late-game world and presentation** | New version-7 worlds use the grounded station, river ferry/hideout and supported Widowmaker tunnel, with six tested walking corridors and a return to Ada for the verdict. Distinct cast, routines, frontier reactions, weather/audio and release QA remain Sprints 8–11. Graphics and actual riding are unverified. |
-| **Player testing** | Some earlier progression and native horse taming/riding are player-reported. The complete Acts 1–10 graphical playthrough has not been verified. |
+| Story | All acts, Justice/Mercy/Vengeance, 12 verdict/gold epilogue combinations, gates/consumption and save restart tested through server callbacks. |
+| World | Ranch, towns, mines, station, ferry and tunnel placed once on surveyed terrain; village/build conflicts fail safely; connected walking corridors pass. New worlds use layout 7; older layouts retain their original content. |
+| Cast and reactions | Original character bodies/skins, introductions, simple routines, hidden standing/trust, visible wanted consequences, boards and non-grind service contracts. |
+| Atmosphere | Local deterministic weather, capped/reducible particles, native footsteps, original opt-in ambience and missing-media fallbacks. |
+| Performance | Server stress coverage for 32 NPCs with 12 weather particles per batch and two audio handles. Client FPS is unverified. |
 
 The current plan is documented in the [extended sprint roadmap](docs/roadmap.md). Detailed test evidence, open issues, and player-reported checks are in [sprint status](docs/sprint-status.md). The original design is in the [Game Design Document](docs/harrows-trail-gdd.md).
 
-## Try the development build
+## Run the release candidate
 
 ### Requirements
 
@@ -81,7 +83,7 @@ The launcher refuses unmarked worlds. Do not rename the marker/config files, poi
 
 Right-click story characters and interaction points. Use **`/trail`** to see the current objective. Luanti’s default inventory key is **I**, though key bindings may differ. Horse taming and riding use Mineclonia’s native behavior.
 
-The opening is intended to begin at the burned ranch and lead toward Red Mesa. Some later story areas still use elevated prototype markers; current travel and interaction details are recorded in the sprint status and will change as grounded-world work progresses.
+The opening is intended to begin at the burned ranch and lead toward Red Mesa. New worlds use grounded locations throughout. Older layouts remain available for save compatibility; current details are recorded in sprint status.
 
 ## Development and testing
 
@@ -141,7 +143,7 @@ Sprint 6 is implemented for new versioned worlds and server-verified. Existing u
 
 Latest checks: `./tests/run-sprint1.sh` PASS (write, read, occupied-site, survey); `./tests/run-sprint5.sh` PASS (12 phases); `./tests/run-sprint6.sh` PASS (five phases); `./tests/run-sprint6-integration.sh` PASS (write/read). `./tests/run-sprint6-route.sh /var/folders/kp/5hhqrcq12hn53ctgc38w33d80000gp/T/harrows-sprint6.nuqJfD/world` PASS with 3,486 verified walking cells and zero corridor failures. The exact original cells included 35 vegetation obstructions that the continuous walking check bypassed. Logs and unresolved verification limits are in [docs/sprint-status.md](docs/sprint-status.md).
 
-Sprint 7 is implemented and server-verified. Fresh launcher worlds use layout version 7; version-6 worlds retain their interim station links, and older layouts remain unchanged. The new world has no elevated story floors. Its station breach clears only owned barricade pieces, ferry options remain optional alternatives, and rescue/verdict outcomes persist. Coordinates and terrain-edit assumptions are in [docs/world-sites.md](docs/world-sites.md).
+At the Sprint 7 checkpoint, the terrain implementation was server-verified. Fresh launcher worlds use layout version 7; version-6 worlds retain their interim station links, and older layouts remain unchanged. The new world has no elevated story floors. Its station breach clears only owned barricade pieces, ferry options remain optional alternatives, and rescue/verdict outcomes persist. Coordinates and terrain-edit assumptions are in [docs/world-sites.md](docs/world-sites.md).
 
 The complete sequential regression batch passed: Sprint 1, Sprint 5 (12 phases), Sprint 6 placement and compatibility integration, the mid-game corridor, Sprint 7 placement and integration, six late-route corridors, launcher safety, shell syntax and whitespace checks. The final native-lantern placement and night-light assertions also passed `./tests/run-sprint7.sh`. Exact commands and logs are recorded in [docs/sprint-status.md](docs/sprint-status.md). These are server-side checks with simulated player callbacks; graphical play, actual riding, connected-player death/rejoin and audible/rendered presentation remain unverified. The user waived manual verification.
 
@@ -179,3 +181,9 @@ Weather is selected from the world seed, game day and region: dust at Mesa/Gulch
 Audio is **off by default**. Use `/trail_audio on` to enable original wind, crickets, railway whistle, saloon motif and river/rail ambience; `/trail_audio off` stops it. At most two sound handles play per player. Use `/trail_effects low` for four particles per batch, or `/trail_effects off` for no local particles/haze. Settings: `harrows_trail_weather` (true), `harrows_trail_particles` (true), `harrows_trail_ambience` (false), `harrows_trail_ambience_gain` (0.15, range 0–0.5).
 
 Run `./tests/run-sprint10.sh` for deterministic weather, restart/missing-media, cap, media-decode and CPU checks. A server probe measured 500 active NPC/weather updates in 16.6 ms with particle/audio calls instrumented. This is Lua CPU evidence, not client FPS, render quality or a listening review. A 2D wood texture was inspected; graphical/audio acceptance remains unverified and manual verification was waived. Asset provenance is in [docs/assets.md](docs/assets.md).
+
+### RC1 build and validation
+
+`./tests/run-all.sh` runs the complete sequential server regression, including both walking-corridor checks. `./tests/run-sprint11.sh` exercises the preparation budget without the optional cache, a maximum fine, all epilogue variants, restart, a 32-NPC stress case and release-mode privilege checks. `python3 tools/package-release.py` builds `.local/releases/harrows-trail-rc1.zip`; `./tests/run-package.sh /absolute/path/to/zip` validates its extracted game files. Python, FFmpeg and ffprobe are development/media-check tools, not runtime dependencies for the bundled assets.
+
+Use `/trail_report` for a report of public progress and versions that excludes private player data and hidden scores. Detailed limitations, backup/restore and clean-install steps are in the [release guide](docs/release-candidate.md).

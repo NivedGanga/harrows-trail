@@ -67,7 +67,7 @@ local function interact(kind,p,s)
  local f=s.flags
  if kind=='gate' then
   if not f.ledger2 then return show(p,kind,'Widowmaker Tunnel','Find the second ledger page at Bitter River before following Nora here.') end
-  if s.unlocked['9'] then return show(p,kind,'Widowmaker Tunnel','The tunnel is open. Find Mercer east; your supplies were already handed over.') end
+  if s.unlocked['9'] then return show(p,kind,'Widowmaker Tunnel','The tunnel is open. Find Mercer further inside; your supplies were already handed over.') end
   return show(p,kind,'Widowmaker Tunnel',chapter.gates[9].text..' Check your main inventory: brown dye must be applied to a leather tunic, and the crossbow must contain an arrow. No items are taken unless you confirm and all requirements are met.',{{'start','Start rescue'}})
  elseif kind=='supplies' then
   local apples,duster,bow=rep.price(s,12),rep.price(s,6),rep.price(s,6)
@@ -78,7 +78,7 @@ local function interact(kind,p,s)
   return show(p,kind,'A good deed',label..'. This is optional and can be done once.',{{'deed','Help'}})
  elseif kind=='mercer' then
   if not s.unlocked['9'] then return show(p,kind,'Mercer','Prepare at the tunnel entrance first.') end
-  if f.mercer_outcome then return show(p,kind,'Mercer',f.mercer_outcome=='spared' and 'Mercer keeps his hands raised and lets you pass. Nora saw you spare him; her trust has improved. Nora is east.' or (f.mercer_trust_lost and 'You killed Mercer after he surrendered; Nora’s trust has fallen. Nora is east.' or 'Mercer is defeated. Nora is east.')) end
+  if f.mercer_outcome then return show(p,kind,'Mercer',f.mercer_outcome=='spared' and 'Mercer keeps his hands raised and lets you pass. Nora saw you spare him; her trust has improved. Nora is further inside.' or (f.mercer_trust_lost and 'You killed Mercer after he surrendered; Nora’s trust has fallen. Nora is further inside.' or 'Mercer is defeated. Nora is further inside.')) end
   if f.mercer_surrender then return show(p,kind,'Mercer surrenders','Mercer drops his weapon and raises both hands. He explicitly surrenders. Spare him or kill him.',{{'spare','Spare Mercer'},{'kill_mercer','Kill Mercer'}}) end
   if f.mercer_duel then return show(p,kind,'Duel with Mercer','Mercer refuses to yield. Strike him to win the duel, or talk him down before he falls.',{{'cover','Talk him down'}}) end
   return show(p,kind,'Mercer at Widowmaker','Mercer bars the tunnel. Offer him a way out or challenge him to a duel.',{{'cover','Talk him down'},{'duel','Challenge Mercer'}})
@@ -88,15 +88,15 @@ local function interact(kind,p,s)
   return show(p,kind,'Nora',(f.promise_alive and 'Nora is free. She remembers your promise to bring Crane back alive.' or 'Nora is free. Crane is ahead; she watches what you choose.')..(s.nora_trust>=60 and ' I trust your word, Eli.' or s.nora_trust<50 and ' Eli, I am afraid of what this is doing to you.' or ' Keep your promises, Eli.'))
  elseif kind=='crane' then
   if not f.nora_freed then return show(p,kind,'Crane','Free Nora before confronting Crane.') end
-  if f.crane_outcome then return show(p,kind,'Crane','Crane’s recorded fate: '..f.crane_outcome..'. '..(f.promise_trust and 'You kept your promise; Nora trusts you more. ' or f.crane_trust_lost and 'You killed a surrendered prisoner; Nora’s trust has fallen. ' or '')..'Go east to decide the verdict.') end
+  if f.crane_outcome then return show(p,kind,'Crane','Crane’s recorded fate: '..f.crane_outcome..'. '..(f.crane_outcome=='released' and not s.verdict and 'He is free of his restraints under a truce. His departure waits for the final word in Red Mesa; he and Nora will meet you there. ' or '')..(f.promise_trust and 'You kept your promise; Nora trusts you more. ' or f.crane_trust_lost and 'You killed a surrendered prisoner; Nora’s trust has fallen. ' or '')..((ctx.late and ctx.late()) and 'Return to Ada in Red Mesa to decide the verdict.' or 'Go east to decide the verdict.')) end
   if not f.crane_surrender then
    if f.crane_disarm_started then return show(p,kind,'Crane','Close in and strike Crane twice with an empty hand to disarm him. He must surrender before his fate is decided.') end
    return show(p,kind,'Crane','Crane reaches for his weapon. Close in and disarm him without a shot; he must surrender before his fate is decided.',{{'disarm','Close in'}})
   end
-  return show(p,kind,'Crane surrenders','Crane drops his weapon and yields. He is alive and unarmed. Restrain him for trial, release him, or kill him.',{{'capture','Capture alive'},{'release','Release alive'},{'kill_crane','Kill Crane'}})
+  return show(p,kind,'Crane surrenders','Crane drops his weapon and yields. He is alive and unarmed. Restrain him for trial, release his restraints under a truce pending the verdict, or kill him. Mercy is the final decision that lets him leave.',{{'capture','Capture alive'},{'release','Release alive'},{'kill_crane','Kill Crane'}})
  elseif kind=='verdict' then
   if not f.crane_outcome then return show(p,kind,'The verdict','Free Nora and resolve Crane’s surrender first.') end
-  if s.verdict and s.verdict~='' then return show(p,kind,'The verdict','Your verdict is recorded. Go east to the ending marker.') end
+  if s.verdict and s.verdict~='' then return show(p,kind,'The verdict',((ctx.late and ctx.late()) and 'Your verdict is recorded. Speak to Ada again for the epilogue.' or 'Your verdict is recorded. Go east to the ending marker.')) end
   local j,m=reasons(s)
   local text='Justice: '..(#j==0 and 'available — Ada will take Crane for trial.' or 'locked — '..table.concat(j,'; ')..'.')..'\nMercy: '..(#m==0 and 'available — Crane rides free with Nora’s agreement.' or 'locked — '..table.concat(m,'; ')..'.')..'\nVengeance: available — Crane dies; your wanted level rises and Eli rides alone.'
   local choices={}; if #j==0 then choices[#choices+1]={'justice','Justice'} end; if #m==0 then choices[#choices+1]={'mercy','Mercy'} end; choices[#choices+1]={'vengeance','Vengeance'}
@@ -120,7 +120,7 @@ local function receive(p,form,fields)
   return
  end
  if kind=='gate' and fields.start and f.ledger2 and not s.unlocked['9'] then
-  if chapter.unlock(p,s,9) then save(name); return show(p,kind,'Widowmaker Tunnel','Four apples handed over once. Your duster and crossbow remain yours. Meet Mercer east.') end
+  if chapter.unlock(p,s,9) then save(name); return show(p,kind,'Widowmaker Tunnel','Four apples handed over once. Your duster and crossbow remain yours. Meet Mercer ahead.') end
   local missing={}; if not inv:contains_item('main','mcl_core:apple_gold 4') then missing[#missing+1]='four golden apples' end
   local d,b=false,false
   for _,v in ipairs(inv:get_list('main')) do local n=v:get_name(); if n=='mcl_armor:chestplate_leather' and v:get_meta():get_string('mcl_armor:color'):lower():sub(1,7)==mcl_dyes.colors.brown.rgb then d=true end; if (n=='mcl_bows:crossbow_loaded' or n=='mcl_bows:crossbow_loaded_enchanted') and v:get_meta():get_string('arrow')~='' then b=true end end

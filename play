@@ -16,7 +16,7 @@ if [ "${HARROWS_WORLD+x}" = x ]; then
 else
   world_dir=$(mktemp -d "$project_dir/.local/play-world.XXXXXX")
   touch "$world_dir/.harrows-play-disposable"
-  printf 'gameid = mineclonia\nbackend = sqlite3\nplayer_backend = files\nauth_backend = files\nload_mod_harrows_trail = true\n' > "$world_dir/world.mt"
+  printf 'gameid = mineclonia\nbackend = sqlite3\nplayer_backend = sqlite3\nauth_backend = sqlite3\nmod_storage_backend = sqlite3\nload_mod_harrows_trail = true\n' > "$world_dir/world.mt"
   printf 'fixed_map_seed = 1730940739604968791\nharrows_trail_grounded = true\n' > "$world_dir/harrows.conf"
 fi
 lock_dir="$world_dir/.harrows-session.lock"
