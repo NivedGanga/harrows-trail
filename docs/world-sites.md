@@ -31,3 +31,13 @@ The long walking corridor from Dry Gulch follows existing terrain around water. 
 For the interim Sprint 6 layout, `/stagecoach station` at the Silver Spur assay office reaches the earlier elevated station after fragment 3 is found. After the breach, `/stagecoach mine` at the station reaches the grounded Ghost Mine; `/stagecoach silver` provides a return. Landing checks must pass before moving the player or the native mounted horse. Grounding the station and later locations belongs to Sprint 7.
 
 New grounded worlds have layout version 6. Earlier unversioned grounded worlds and marker-era worlds retain their original positions, progression and stagecoach connection. No active save is opened or migrated by the tests. Placement rejects occupied or protected construction space, nearby village POIs, metadata, timers, objects, unsuitable terrain and recorded player edits. A partial placement after a crash is preserved and refused rather than repaired automatically. Direct changes made by other mods without player callbacks are not recorded by the touched-site safeguard.
+
+## Sprint 7 construction plans — not active yet
+
+| Site | Centre X/Y/Z | Construction |
+|---|---|---|
+| Crane's Station | -300 / 19 / -213 | Plains depot, water tower, native rails, owned wall/fence barricade |
+| Bitter River | 300 / 21 / 1500 | Swampland shade/hut, shallow channel, docks and flat ferry deck |
+| Widowmaker | 499 / 32 / 1605 | Supported cut in exposed mountain rock within the Forest hillside; stairs and rails |
+
+The plans are in `world_lategame.lua`. Terrain changes require explicit per-target permission and a per-site native-node whitelist; normal site rules remain unchanged. Bitter River's channel is constructed inside the footprint because this Swamp patch had no open water in the survey. Widowmaker's floor spans a natural cavity between checked rock anchors; its roof and narrow approach preserve the tree trunks. The construction test records and checks the outer boundary across restart. These plans are currently exercised only in disposable tests; activation and travel integration are still in progress.

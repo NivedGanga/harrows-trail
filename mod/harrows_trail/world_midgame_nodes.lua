@@ -1,5 +1,5 @@
 return function(interact)
- local actors={dust=2,gulch=2,ruth_gulch=1,dutch=2}
+ local actors={dust=2,gulch=2,ruth_gulch=1,dutch=2,ferry=2}
  local function spawn(pos,kind)
   local at={x=pos.x+actors[kind],y=pos.y-1,z=pos.z}
   for _,obj in ipairs(core.get_objects_inside_radius(at,0.4)) do
@@ -16,7 +16,9 @@ return function(interact)
   on_rightclick=function(self,p) interact(self.kind,self.object:get_pos(),p) end,
  })
  local fixtures={mine_gate={'Mine timbers','mcl_core_planks_spruce.png'},mine_clue={'Nora’s trail beside the tracks','default_bookshelf.png'},ledger1={'Mine office ledger','default_bookshelf.png'},pass={'Iron Pass timbers','mcl_core_planks_spruce.png'},rubble1={'Western collapsed shaft','default_cobble.png'},rubble2={'Eastern collapsed shaft','default_cobble.png'},assay={'Assay ledger desk','default_bookshelf.png'},cartography={'Map desk','default_bookshelf.png'},gold_cache={'Assay safe','mcl_barrels_barrel_side.png'}}
- for _,kind in ipairs({'dust','gulch','ruth_gulch','dutch','exposed','shelter1','shelter2','mine_gate','mine_clue','ledger1','pass','rubble1','rubble2','assay','cartography','gold_cache'}) do
+ fixtures.station={'Station planning desk','default_bookshelf.png'};fixtures.charge={'Barricade charge controls','mcl_barrels_barrel_side.png'}
+ fixtures.hideout={'Hideout search','default_bookshelf.png'};fixtures.ledger2={'Hideout ledger','default_bookshelf.png'};fixtures.snag={'Snagged ferry line','mcl_core_planks_spruce.png'}
+ for _,kind in ipairs({'dust','gulch','ruth_gulch','dutch','exposed','shelter1','shelter2','mine_gate','mine_clue','ledger1','pass','rubble1','rubble2','assay','cartography','gold_cache','station','charge','ferry','snag','hideout','ledger2'}) do
   local actor=actors[kind]
   core.register_node('harrows_trail:mid_'..kind,{
    description=fixtures[kind] and fixtures[kind][1] or actor and 'Building wall' or 'Trail shelter',
@@ -37,7 +39,7 @@ return function(interact)
   if core.get_node(def.anchor).name==name then core.set_node(def.anchor,{name=name..'_cleared'}) end
   for dy=0,1 do local p=vector.offset(def.door,0,dy,0);if core.get_node(p).name==name then core.set_node(p,{name='air'}) end end
  end
- core.register_lbm({name='harrows_trail:mid_actors',nodenames={'harrows_trail:mid_dust','harrows_trail:mid_gulch','harrows_trail:mid_ruth_gulch','harrows_trail:mid_dutch'},run_at_every_load=true,
+ core.register_lbm({name='harrows_trail:mid_actors',nodenames={'harrows_trail:mid_dust','harrows_trail:mid_gulch','harrows_trail:mid_ruth_gulch','harrows_trail:mid_dutch','harrows_trail:mid_ferry'},run_at_every_load=true,
   action=function(pos,node) local kind=node.name:match('mid_(.+)$');if actors[kind] then spawn(pos,kind) end end})
  local function ensure_actors(buildings)
   for _,b in ipairs(buildings) do if b.actor then

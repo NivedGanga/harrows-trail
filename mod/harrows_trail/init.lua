@@ -2,6 +2,7 @@ local storage = core.get_mod_storage()
 local world_sites = dofile(core.get_modpath("harrows_trail") .. "/world_sites.lua")(storage)
 local world_buildings = dofile(core.get_modpath("harrows_trail") .. "/world_buildings.lua")
 local world_midgame = dofile(core.get_modpath("harrows_trail") .. "/world_midgame.lua")
+local world_lategame = dofile(core.get_modpath("harrows_trail") .. "/world_lategame.lua")
 local midgame_route = dofile(core.get_modpath("harrows_trail") .. "/world_midgame_route.lua")
 local grant = dofile(core.get_modpath("harrows_trail") .. "/inventory.lua")
 local states = {}
@@ -571,6 +572,7 @@ if core.settings:get_bool("harrows_trail_test", false) then
 		receive_fields = receive_fields, journal = journal, is_riding = is_riding,
 		ensure_site = ensure_site, ensure_grounded_site = ensure_grounded_site, update_grounded = update_grounded, advance_ranch_route = advance_ranch_route, opening_target = opening_target, grounded_mode = grounded_mode, site = site, storage = storage, world_sites = world_sites, world_buildings = world_buildings, world_opening = world_opening, world_midgame = world_midgame, world_midgame_nodes = world_midgame_nodes,
 		grant = grant, starter = starter, recover_horse_saddle = recover_horse_saddle, deliver_saddles = deliver_saddles}
+ harrows_trail_test.world_lategame=world_lategame
  harrows_trail_test.midgame_mode=midgame_mode;harrows_trail_test.midgame_target=midgame_target
 end
 
