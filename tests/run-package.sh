@@ -10,4 +10,5 @@ with zipfile.ZipFile(sys.argv[1])as z:z.extractall(sys.argv[2])
 PY
 # The same economy, stress, restart and release-mode checks run against the extracted package, not the source mod.
 HARROWS_TEST_MOD_PATH="$test_dir/mods" "$project_dir/tests/run-sprint11.sh"
+HARROWS_TEST_MOD_PATH="$test_dir/mods" "$project_dir/tests/run-documents.sh"
 echo "Package extraction and installed-module QA: PASS; files: $test_dir"

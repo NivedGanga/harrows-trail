@@ -41,6 +41,7 @@ Never change an existing seed to force placement, clear placement flags, reset a
 
 ## Controls and player guidance
 
+- Select story map fragments, the Harrow map or ledgers in the hotbar and right-click air to read them. Left-click also works; sneak-right-click reads when targeting an interactive block. Native empty maps fill on right-click; native filled terrain maps display while held.
 - Right-click characters, desks and boards. `/trail` explains objectives and consumed items. Inventory is normally I; native key bindings can be changed.
 - Tame/saddle/ride through Mineclonia's native horse controls. Samuel's saddle recovery is at the ranch; Dutch handles later replacements. No custom horse movement is installed.
 - First meetings use five-second subtitles: sneak skips; right-click again opens dialogue immediately. Scenes never override movement, physics or horse attachment.

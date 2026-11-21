@@ -2,6 +2,7 @@
 # Tests create disposable worlds. No live player world is opened by these runners.
 set -eu
 cd "$(dirname "$0")/.."
+./tests/run-documents.sh
 ./tests/run-sprint1.sh
 ./tests/run-sprint5.sh
 ./tests/run-sprint6.sh

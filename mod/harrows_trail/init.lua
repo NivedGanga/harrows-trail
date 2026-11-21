@@ -692,3 +692,5 @@ if core.settings:get_bool("harrows_trail_test",false) then harrows_trail_test.at
 
 local release=dofile(core.get_modpath("harrows_trail").."/release.lua")({states=states,storage=storage,sites=world_sites})
 if core.settings:get_bool("harrows_trail_test",false) then harrows_trail_test.release=release end
+
+dofile(core.get_modpath('harrows_trail')..'/documents.lua')

@@ -187,3 +187,9 @@ Run `./tests/run-sprint10.sh` for deterministic weather, restart/missing-media, 
 `./tests/run-all.sh` runs the complete sequential server regression, including both walking-corridor checks. `./tests/run-sprint11.sh` exercises the preparation budget without the optional cache, a maximum fine, all epilogue variants, restart, a 32-NPC stress case and release-mode privilege checks. `python3 tools/package-release.py` builds `.local/releases/harrows-trail-rc1.zip`; `./tests/run-package.sh /absolute/path/to/zip` validates its extracted game files. Python, FFmpeg and ffprobe are development/media-check tools, not runtime dependencies for the bundled assets.
 
 Use `/trail_report` for a report of public progress and versions that excludes private player data and hidden scores. Detailed limitations, backup/restore and clean-install steps are in the [release guide](docs/release-candidate.md).
+
+### Reading map clues and documents
+
+Select a story map fragment, Harrow map or ledger in the hotbar and **right-click the air** to read it. Left-click also works. When looking at a chest, door or other interactive block, its interaction takes priority; **sneak-right-click** reads the document instead. Existing items work after restarting the same world with the updated mod; no new world or replacement item is needed.
+
+Native Mineclonia maps have different controls: right-click an **empty map** to fill it, then **hold the filled map** to display its terrain image. Story fragments/Harrow map are readable clue documents, not native terrain-map images.
