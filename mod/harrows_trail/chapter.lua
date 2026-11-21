@@ -1,5 +1,6 @@
 return function(ctx)
 local states, save, storage, message = ctx.states, ctx.save, ctx.storage, ctx.message
+local rep=ctx.reputation
 local gold, block, lantern = 'mcl_core:gold_ingot', 'mcl_core:goldblock', 'mcl_lanterns:lantern_floor'
 local gates = {
  [2]={text='Ride your owned, tamed, saddled horse; saddle retained.', validator=ctx.riding},
@@ -142,7 +143,7 @@ local function interact(kind,pos,p,s)
    if not s.flags.ledger1 then message(p,'Amos Reed','Follow the Ghost Mine clue to the ledger first.')
    elseif not s.unlocked['8'] then prompt(p,kind,gates[8].text..' Amos can ferry you toward Nora.','start8;Approach ferry')
    elseif s.flags.ferry_crossed then message(p,'Amos Reed','The way to the hideout east is open.')
-   else prompt(p,kind,'Passage costs 3 gold ingots (provisional), or ask for a waiver if trusted. You can instead clear the snagged line east.','pay;Pay 3 gold','waiver;Ask for waiver') end
+   else prompt(p,kind,'Passage costs '..rep.price(s,3)..' gold ingots, or ask for a waiver if trusted. You can instead clear the snagged line east.','pay;Pay '..rep.price(s,3)..' gold','waiver;Ask for waiver') end
   elseif kind=='snag' then
    if not s.unlocked['8'] then message(p,'Ferry line','Speak to Amos first.')
    elseif mid and ctx.late and ctx.late() and not ctx.clear_snag() then message(p,'Ferry line','The line is protected or has been replaced. Nothing was changed; speak with Amos about the other passage options.')
@@ -156,7 +157,7 @@ local function interact(kind,pos,p,s)
   end
   return true
  elseif kind=='recovery' then ctx.recover(p)
- elseif kind=='dutch' then prompt(p,kind,'Replacement saddle costs 3 gold ingots, consumed on confirmation. Before Dry Gulch, the ranch tack room recovers Samuel’s saddle for free. Horse-death returns are free.','saddle_buy;Buy replacement')
+ elseif kind=='dutch' then prompt(p,kind,'Replacement saddle costs '..rep.price(s,3)..' gold ingots, consumed on confirmation. Before Dry Gulch, the ranch tack room recovers Samuel’s saddle for free. Horse-death returns are free.','saddle_buy;Buy replacement')
  elseif kind=='delivery' then s.flags.parcel=true; save(name); message(p,'Ranch delivery','Take the supply parcel to the east corral depot. Each completed trip earns 3 gold. Repeat if supplies are lost.')
  elseif kind=='depot' then
   if not s.flags.parcel then message(p,'Supply depot','Collect a parcel at the west ranch supply desk first.')
@@ -166,7 +167,7 @@ local function interact(kind,pos,p,s)
   if s.flags.payroll then message(p,'Abandoned payroll box','The payroll reward was already recovered. Ranch deliveries provide more gold.')
   elseif ctx.grant(inv,ItemStack(gold..' 12')) then s.flags.payroll=true; save(name); message(p,'Abandoned payroll box','You recover 12 gold ingots: enough for bail and Ruth’s lantern order. If lost, ranch deliveries provide more.')
   else message(p,'Abandoned payroll box','Make room for 12 gold ingots and search again.') end
- elseif kind=='ruth' or kind=='ruth_gulch' then prompt(p,kind,'Ruth’s order desk: four lanterns cost 3 gold ingots, consumed once per purchase. Lanterns remain yours during the crossing. Her shop also awaits at Dry Gulch.','lantern_buy;Buy 4 lanterns')
+ elseif kind=='ruth' or kind=='ruth_gulch' then prompt(p,kind,'Use /frontier nearby for all fallback equipment and one-time exploration contracts. Ruth’s order desk: four lanterns cost '..rep.price(s,3)..' gold ingots, consumed once per purchase. Lanterns remain yours during the crossing. Her shop also awaits at Dry Gulch.','lantern_buy;Buy 4 lanterns')
  elseif kind=='jesse' then
   if not s.unlocked['3'] then message(p,'Jesse Moss','Ada needs bail before she can release me.')
   elseif not s.flags.jesse_briefed and not ctx.grant(inv,ItemStack('harrows_trail:fragment_2')) then message(p,'Jesse Moss','Make room for Ada’s map fragment.')
@@ -222,14 +223,14 @@ local function receive(p,form,f)
   if unlock(p,s,8) then message(p,'Amos Reed','Speak to me again to arrange passage, or clear the snagged line.') else message(p,'Amos Reed','Missing equipment. '..gates[8].text) end
  elseif kind=='ferry' and s.unlocked['8'] and not s.flags.ferry_crossed and (f.pay or f.waiver) then
   if f.waiver and s.honor<53 then message(p,'Amos Reed','I do not yet know you well enough to waive the fee. Pay or clear the snagged line.'); return end
-  if f.pay and not inv:contains_item('main',gold..' 3') then message(p,'Amos Reed','You need 3 gold ingots, or clear the snagged line.'); return end
-  if f.pay then inv:remove_item('main',gold..' 3') end
+  if f.pay and not inv:contains_item('main',gold..' '..rep.price(s,3)) then message(p,'Amos Reed','You need '..rep.price(s,3)..' gold ingots, or clear the snagged line.'); return end
+  if f.pay then inv:remove_item('main',gold..' '..rep.price(s,3)) end
   s.flags.ferry_crossed=true; s.flags.ferry_method=f.pay and 'pay' or 'waiver'; save(name); message(p,'Amos Reed','Passage arranged. Search the hideout east for Nora’s trail.')
  elseif f.bail and kind=='ada' and s.flags.choice and s.unlocked['2'] then
   if unlock(p,s,3) then s.flags.jesse_free=true; save(name); message(p,'Ada Wells','Bail recorded. Jesse is released; meet him at the jail door for my fragment and Crane’s route.') else message(p,'Ada Wells','Missing bail. '..gates[3].text) end
  elseif f.saddle_buy and kind=='dutch' or f.lantern_buy and (kind=='ruth' or kind=='ruth_gulch') then
   local item=f.saddle_buy and 'mcl_mobitems:saddle' or lantern..' 4'
-  if ctx.grant(inv,ItemStack(item),ItemStack(gold..' 3')) then message(p,'Purchase complete','Three gold paid. Your equipment is retained by story gates.') else message(p,'Shop','Need 3 gold ingots and room for the purchase. No payment was taken; try again.') end
+  if ctx.grant(inv,ItemStack(item),ItemStack(gold..' '..rep.price(s,3))) then message(p,'Purchase complete','Purchase paid. Your equipment is retained by story gates.') else message(p,'Shop','Need '..rep.price(s,3)..' gold ingots and room for the purchase. No payment was taken; try again.') end
  elseif kind=='dust' and (f.exposed_route or f.sheltered_route) and s.flags.jesse_briefed then
   local tod=core.get_timeofday()
   if tod>0.2 and tod<0.8 then message(p,'Dust Road','Wait safely for night. There is no deadline.'); return end

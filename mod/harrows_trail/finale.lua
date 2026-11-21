@@ -1,4 +1,5 @@
 return function(ctx)
+local rep=ctx.reputation
 local chapter, states, save, storage = ctx.chapter, ctx.states, ctx.save, ctx.storage
 local positions = {
  gate={x=264,y=221,z=0}, supplies={x=266,y=221,z=-4}, goods={x=268,y=221,z=4},
@@ -69,7 +70,8 @@ local function interact(kind,p,s)
   if s.unlocked['9'] then return show(p,kind,'Widowmaker Tunnel','The tunnel is open. Find Mercer east; your supplies were already handed over.') end
   return show(p,kind,'Widowmaker Tunnel',chapter.gates[9].text..' Check your main inventory: brown dye must be applied to a leather tunic, and the crossbow must contain an arrow. No items are taken unless you confirm and all requirements are met.',{{'start','Start rescue'}})
  elseif kind=='supplies' then
-  return show(p,kind,'Ruth’s rescue supplies','Fallback orders cost gold, consumed on purchase: four golden apples for 12 ingots; a brown-dyed leather tunic for 6; a loaded crossbow for 6. Ranch deliveries can earn gold. Make inventory room first.',{{'apples','Apples: 12 gold'},{'duster','Duster: 6 gold'},{'bow','Crossbow: 6 gold'}})
+  local apples,duster,bow=rep.price(s,12),rep.price(s,6),rep.price(s,6)
+  return show(p,kind,'Ruth’s rescue supplies','Fallback orders consume gold once per purchase. Make inventory room first. One-time frontier contracts fund the rescue; use /frontier in town.',{{'apples','Apples: '..apples..' gold'},{'duster','Duster: '..duster..' gold'},{'bow','Crossbow: '..bow..' gold'}})
  elseif kind=='goods' or kind=='help' or kind=='debt' then
   local label=({goods='Return stolen goods to their owner',help='Help a townsperson repair a wagon',debt='Pay a townsperson’s debt of one gold ingot'})[kind]
   if f['honor_'..kind] then return show(p,kind,'A good deed','You already helped here. Your standing benefited once.') end
@@ -83,7 +85,7 @@ local function interact(kind,p,s)
  elseif kind=='nora' then
   if not f.mercer_outcome then return show(p,kind,'Nora','Mercer blocks the way. Resolve his encounter first.') end
   if not f.nora_freed then return show(p,kind,'Nora','Nora is bound beside the tunnel. Free her. You may promise to bring Crane back alive; keeping that promise earns her trust.',{{'promise','Free; promise alive'},{'free','Free Nora'}}) end
-  return show(p,kind,'Nora',f.promise_alive and 'Nora is free. She remembers your promise to bring Crane back alive.' or 'Nora is free. Crane is ahead; she watches what you choose.')
+  return show(p,kind,'Nora',(f.promise_alive and 'Nora is free. She remembers your promise to bring Crane back alive.' or 'Nora is free. Crane is ahead; she watches what you choose.')..(s.nora_trust>=60 and ' I trust your word, Eli.' or s.nora_trust<50 and ' Eli, I am afraid of what this is doing to you.' or ' Keep your promises, Eli.'))
  elseif kind=='crane' then
   if not f.nora_freed then return show(p,kind,'Crane','Free Nora before confronting Crane.') end
   if f.crane_outcome then return show(p,kind,'Crane','Crane’s recorded fate: '..f.crane_outcome..'. '..(f.promise_trust and 'You kept your promise; Nora trusts you more. ' or f.crane_trust_lost and 'You killed a surrendered prisoner; Nora’s trust has fallen. ' or '')..'Go east to decide the verdict.') end
@@ -129,31 +131,32 @@ local function receive(p,form,fields)
   if fields.apples then item=ItemStack('mcl_core:apple_gold 4'); price=12
   elseif fields.duster then item=mcl_armor.colorize_leather_armor(ItemStack('mcl_armor:chestplate_leather'),mcl_dyes.colors.brown.rgb); price=6
   else item=ItemStack('mcl_bows:crossbow_loaded'); item:get_meta():set_string('arrow','mcl_bows:arrow'); price=6 end
+  price=rep.price(s,price)
   return show(p,kind,'Ruth’s rescue supplies',ctx.grant(inv,item,ItemStack('mcl_core:gold_ingot '..price)) and 'Purchase complete. The equipment is ready.' or 'Need enough gold and inventory room. Nothing was taken.')
  elseif (kind=='goods' or kind=='help' or kind=='debt') and fields.deed and not f['honor_'..kind] then
   if kind=='debt' and not inv:contains_item('main','mcl_core:gold_ingot') then return show(p,kind,'A good deed','Bring one gold ingot to pay the debt. Nothing was taken.') end
   if kind=='debt' then inv:remove_item('main','mcl_core:gold_ingot') end
-  f['honor_'..kind]=true; s.honor=math.min(100,s.honor+({goods=5,help=3,debt=5})[kind]); save(name)
+  f['honor_'..kind]=true; rep.event(s,({goods='return_goods',help='help',debt='debt'})[kind],'tunnel_'..kind); save(name)
   return show(p,kind,'A good deed','Your help improves your standing in town. This opportunity cannot be repeated.')
  elseif kind=='mercer' and s.unlocked['9'] and not f.mercer_outcome then
   if fields.cover then f.mercer_surrender=true
   elseif fields.duel and not f.mercer_surrender then f.mercer_duel=true
-  elseif fields.spare and f.mercer_surrender then f.mercer_outcome='spared'; if not f.mercer_trust then f.mercer_trust=true; s.nora_trust=math.min(100,s.nora_trust+5) end
-  elseif fields.kill_mercer and f.mercer_surrender then f.mercer_outcome='killed'; s.nora_trust=math.max(0,s.nora_trust-5); f.mercer_trust_lost=true end
+  elseif fields.spare and f.mercer_surrender then f.mercer_outcome='spared'; if not f.mercer_trust then f.mercer_trust=true; rep.event(s,'spare','mercer_spared') end
+  elseif fields.kill_mercer and f.mercer_surrender then f.mercer_outcome='killed'; rep.event(s,'prisoner_killed','mercer_killed'); f.mercer_trust_lost=true end
  elseif kind=='nora' and f.mercer_outcome and not f.nora_freed and (fields.promise or fields.free) then
   f.nora_freed=true; f.promise_alive=fields.promise and true or nil
  elseif kind=='crane' and f.nora_freed and not f.crane_outcome then
   if fields.disarm then f.crane_disarm_started=true
   elseif f.crane_surrender and (fields.capture or fields.release or fields.kill_crane) then
    f.crane_outcome=fields.capture and 'captured' or fields.release and 'released' or 'killed'
-   if f.crane_outcome=='killed' then s.nora_trust=math.max(0,s.nora_trust-5); f.crane_trust_lost=true end
-   if f.promise_alive and f.crane_outcome~='killed' and not f.promise_trust then f.promise_trust=true; s.nora_trust=math.min(100,s.nora_trust+5) end
+   if f.crane_outcome=='killed' then rep.event(s,'prisoner_killed','crane_killed'); f.crane_trust_lost=true end
+   if f.promise_alive and f.crane_outcome~='killed' and not f.promise_trust then f.promise_trust=true; rep.event(s,'promise_kept','promise_alive') end
   end
  elseif kind=='verdict' and f.crane_outcome and (not s.verdict or s.verdict=='') then
   local j,m=reasons(s)
-  if fields.justice and #j==0 then s.verdict='justice'; s.honor=math.min(100,s.honor+5)
+  if fields.justice and #j==0 then s.verdict='justice'; rep.event(s,'justice','justice')
   elseif fields.mercy and #m==0 then s.verdict='mercy'; f.crane_outcome='released'
-  elseif fields.vengeance then s.verdict='vengeance'; if f.crane_outcome~='killed' and not f.crane_trust_lost then s.nora_trust=math.max(0,s.nora_trust-5); f.crane_trust_lost=true end; f.crane_outcome='killed'; s.wanted=math.min(4,(s.wanted or 0)+1) end
+  elseif fields.vengeance then s.verdict='vengeance'; if f.crane_outcome~='killed' and not f.crane_trust_lost then rep.event(s,'prisoner_killed','crane_killed'); f.crane_trust_lost=true end; f.crane_outcome='killed'; rep.event(s,'vengeance','vengeance') end
   if s.verdict then s.unlocked['10']=true; s.act=10 end
  elseif kind=='ending' and s.verdict and f.gold_found and not f.gold_choice then
   if fields.railroad then f.gold_choice='railroad' elseif fields.keep_gold then f.gold_choice='keep' elseif fields.ranch then f.gold_choice='ranch' end

@@ -7,7 +7,7 @@ local late_routes = dofile(core.get_modpath("harrows_trail") .. "/world_lategame
 local midgame_route = dofile(core.get_modpath("harrows_trail") .. "/world_midgame_route.lua")
 local grant = dofile(core.get_modpath("harrows_trail") .. "/inventory.lua")
 local states = {}
-local cast_layer
+local cast_layer,reputation
 core.register_chatcommand("trail_sites", {
  description = "Inspect Harrow's Trail world site status", privs = {server=true},
  func = function()
@@ -27,6 +27,7 @@ local function default_state()
 		wanted = 0, nora_trust = 50, map_fragments = {}, flags = {start_pending = true}}
 end
 local function save(name)
+	if states[name] and reputation then reputation.normalize(states[name]) end
 	if states[name] then storage:set_string("player:" .. name, core.write_json(states[name])) end
  if cast_layer then cast_layer.changed(name) end
 end
@@ -44,6 +45,7 @@ local function load(name)
 			error("Harrow's Trail: damaged " .. field .. " for " .. name .. "; refusing to overwrite it")
 		end
 	end
+	if reputation then reputation.normalize(state) end
 	return state
 end
 -- The pinned native horse calls on_die before its normal equipment drops.
@@ -88,6 +90,24 @@ horse_def.on_die = function(horse, ...)
 end
 local chapter,finale
 local grounded_mode
+reputation = dofile(core.get_modpath('harrows_trail')..'/reputation.lua')({states=states,save=save,grant=grant,
+ cast={safe=function(pos) return cast_layer and cast_layer.safe(pos) end},
+ ready=function(id)
+  local layout=tonumber(storage:get_string('world_layout_version')) or 7
+  if grounded_mode and (id=='red_mesa' or layout>=6 and (id=='dry_gulch' or id=='silver_spur') or layout>=7 and id=='bitter_river') then return world_sites.placed(id) end
+  return storage:get_string('site_ready')=='1'
+ end,
+ road=function(pos)
+  for _,point in ipairs(midgame_route) do if vector.distance(pos,point)<16 then return true end end
+  for _,route in pairs(late_routes) do for _,point in ipairs(route) do if vector.distance(pos,point)<16 then return true end end end
+  return false
+ end,
+ towns=function() return {red_mesa=grounded_mode and world_buildings.positions.ada or {x=55,y=221,z=0},
+  dry_gulch=chapter.positions.gulch,silver_spur=chapter.positions.assay,bitter_river=chapter.positions.ferry} end,
+ board_positions=function()
+  local p={red_mesa=grounded_mode and world_buildings.positions.ada or {x=55,y=221,z=0},dry_gulch=chapter.positions.gulch,silver_spur=chapter.positions.assay,bitter_river=chapter.positions.ferry}
+  for id,pos in pairs(p) do p[id]=vector.offset(pos,-1,1,-2.55) end;return p
+ end})
 local function journal(s)
 	if chapter and s.flags.choice then return chapter.journal(s) end
 	if s.flags.choice then
@@ -113,7 +133,7 @@ local function message(player, title, msg, buttons)
 end
 core.register_chatcommand("trail", {description = "Read Eli's trail journal", func = function(name)
 	if not states[name] then return false, "Your journal is unavailable." end
-	show(name, "Eli's journal", journal(states[name]))
+	show(name, "Eli's journal", journal(states[name]).."\n\n"..reputation.summary(states[name]))
 	return true
 end})
 local function is_riding(player)
@@ -262,7 +282,7 @@ local function receive_fields(player, formname, fields)
 	local site = core.parse_json(storage:get_string("site"))
 	if not site or vector.distance(player:get_pos(), site.ada) > 8 then return end
 	s.flags.choice = fields.evidence and "evidence" or "keep"
-	if fields.evidence then s.honor = math.min(100, s.honor + 3) end
+	if fields.evidence then reputation.event(s,'evidence','witness') end
 	save(name)
 	local response = fields.evidence and "Ada accepts the scrap and promises to protect the witness. Your trust in her strengthens your standing." or "Ada nods, though disappointed. She asks you to keep the witness safe and promises to pursue Crane."
 	message(player, "Sheriff Ada Wells", response .. " Speak to Ada again about Jesse Moss and bail.")
@@ -363,12 +383,15 @@ local function ensure_grounded_site(id)
  if (ground_retry[id] or 0)>core.get_gametime() then return end
  ground_busy[id]=true
  local p=def.center
- core.emerge_area({x=p.x-def.half_x-48,y=y-48,z=p.z-def.half_z-48},
-  {x=p.x+def.half_x+48,y=y+def.height+48,z=p.z+def.half_z+48},function(_,action,left)
+ local lower={x=p.x-def.half_x-48,y=y-48,z=p.z-def.half_z-48}
+ local upper={x=p.x+def.half_x+48,y=y+def.height+48,z=p.z+def.half_z+48}
+ core.emerge_area(lower,upper,function(_,action,left)
    if action==core.EMERGE_ERRORED or action==core.EMERGE_CANCELLED then
     ground_busy[id]=nil; ground_retry[id]=core.get_gametime()+15; return
    end
    if left~=0 then return end
+   -- Earlier generated blocks can unload while a large survey is emerging.
+   core.load_area(lower,upper)
    local layout,zones
    if world_lategame.sites[id] then layout,zones=world_lategame.layout(id) elseif world_midgame.sites[id] then layout,zones=world_midgame.layout(id) else layout,zones=world_buildings.layout(id) end
    local ok,reason=world_sites.place(id,y,layout,zones)
@@ -639,7 +662,7 @@ if core.settings:get_bool("harrows_trail_test", false) then
 end
 
 chapter = dofile(core.get_modpath("harrows_trail") .. "/chapter.lua")({
- states=states, save=save, storage=storage, message=message, grant=grant, riding=is_riding, grounded=grounded_mode, midgame=midgame_mode, late=late_mode, clear_rubble=world_midgame_nodes.clear_rubble,
+ reputation=reputation,states=states, save=save, storage=storage, message=message, grant=grant, riding=is_riding, grounded=grounded_mode, midgame=midgame_mode, late=late_mode, clear_rubble=world_midgame_nodes.clear_rubble,
  can_charge=world_lategame.can_charge,place_charge=world_lategame.place_charge,breach=world_lategame.breach,clear_snag=world_lategame.clear_snag,
  recover=function(p) interact("tack", site.tack, p) end})
 if core.settings:get_bool("harrows_trail_test", false) then harrows_trail_test.chapter = chapter end
@@ -652,10 +675,12 @@ local world_travel = dofile(core.get_modpath("harrows_trail") .. "/world_travel.
 if core.settings:get_bool("harrows_trail_test", false) then harrows_trail_test.world_travel=world_travel end
 
 finale = dofile(core.get_modpath("harrows_trail") .. "/finale.lua")({
- states=states, save=save, storage=storage, message=message, grant=grant, chapter=chapter,late=late_mode})
+ reputation=reputation,states=states, save=save, storage=storage, message=message, grant=grant, chapter=chapter,late=late_mode})
 if grounded_mode then apply_grounded_positions() end
 chapter.context.finale_journal = finale.journal
 if core.settings:get_bool("harrows_trail_test", false) then harrows_trail_test.finale = finale end
 
 cast_layer = dofile(core.get_modpath('harrows_trail')..'/cast.lua')({states=states,save=save,chapter=chapter,finale=finale,late=late_mode,ada=world_buildings.positions.ada})
 if harrows_trail_test then harrows_trail_test.cast=cast_layer end
+
+if harrows_trail_test then harrows_trail_test.reputation=reputation end

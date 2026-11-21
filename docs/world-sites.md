@@ -57,3 +57,5 @@ The plans are in `world_lategame.lua`. Terrain changes require explicit per-targ
 | Ada: verdict and epilogue | 614 | 21 | 788 |
 
 `world_lategame_routes.lua` provides advisory guidance for six corridors. `tests/sprint7_routes.json` records the surveyed routes, and the route checker requires continuous walking detours around local generated obstacles. The tunnel stairs were also checked with the engine pathfinder and explicit headroom checks. This does not establish horse clearance throughout the forest, mine or tunnel; dismount where the trail narrows.
+
+Sprint 9 regression fix: after a site's padded `emerge_area` completes, the loader calls `core.load_area` for that same generated area before preflight. A long survey can otherwise unload earlier mapblocks and fail its village-area check. This reload changes no blocks and does not bypass the overlap, ownership, protection, seed or terrain checks.

@@ -152,3 +152,20 @@ Original cast skins distinguish the ten named roles; Eli gains a brown coat appe
 Ada patrols in the evening and rests in her office at night; Jonah cleans by day and tends the saloon later; Dutch uses the stable's upper hay shelf at night; Ruth closes regular business at night; Amos sits by a harmless visual fire after daylight. Urgent rescue supplies/evidence remain accessible after hours. Jesse stays jailed until released, stages along the Dust crossing, then hides at Bitter River. Crane appears at the depot, mine and river hideout before the final tunnel encounter. Rescued Nora and captured Crane appear with Ada for the verdict. New stables have a covered upper hay shelf; previously placed buildings are preserved.
 
 Routines update every two seconds within 48 nodes, use validated short waypoints with a home fallback, and pin story encounters. These are simple schedule changes, not continuous simulated lives. Original asset sources and reproduction instructions are in [docs/assets.md](docs/assets.md). Run `./tests/run-sprint8.sh` for cast/persistence checks and `./tests/run-all.sh` for sequential server regressions. Graphical rendering, natural movement, actual riding and connected-client scene behavior remain unverified; manual verification was waived.
+
+### Sprint 9 frontier reactions
+
+Read `/trail` for qualitative standing/trust and visible wanted stars. Use `/frontier` within a town or the ferry, or right-click its board, for a current notice, a written telegram/poster, contracts, rumors, equipment and fines. Board contracts pay **once** after the local story lead: Mesa 9, Gulch 12, Silver Spur 18, Bitter River 12 gold. They fund preparation without repeated mining or delivery trips. Ruth's complete fallback stock is available through these services; rescue supplies remain at Widowmaker. Free public leads and clearing the ferry snag are always available.
+
+| Consequence | Rule |
+|---|---|
+| Standing | Returning goods +5, helping +3, debt +5; theft −5, unprovoked assault −10, bystander death −20; values remain hidden |
+| Trust | Returned goods, kept promise and spared surrender +5; explicit abandonment or killed surrendered prisoner −5; values remain hidden |
+| Wanted | Deputy attack/horse theft +1; shooting a townsperson +2; capped at 4 stars |
+| Town/road response | Deputies pursue at 3; posters and road hunter eligibility at 4 |
+| Fine/evasion | 3 gold per star clears the fine; one online day/night out of town and pursuit removes one star; offline time gives no credit |
+| Prices | Good standing reduces ordinary prices to two-thirds rounded up; a bad name doubles them; Amos retains the existing trusted waiver |
+
+Story flags and per-event keys prevent repeated rewards across saves. Protected cast members survive assault to keep the rescue playable; native villagers supply bystander-death consequences. Native riding remains unchanged; mounting another owner's horse reports theft if the native interaction permits it. One road hunter attempt per game day keeps pursuit bounded. Hunters currently pursue on foot; mounted enemy AI is not implemented. Board goods are the explicit theft interaction; ordinary player-owned containers are not reclassified as town property.
+
+Run `./tests/run-sprint9.sh` and `./tests/run-all.sh`. These test server rules/callbacks and persistence, not graphical pursuit, connected-player death/rejoin or natural-looking AI.
