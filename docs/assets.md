@@ -23,3 +23,7 @@ The supplied audio is Ogg Vorbis, stereo, 22050 Hz, about eight seconds each. Re
 Cast art was polished in its original generator with faded stitching, waistcoat buttons and hat overlays while retaining each palette. Missing skin files use distinct native character tints in entities and epilogue models. Missing weather textures suppress those particles; missing timber textures use the corresponding native texture. Missing sound files are skipped. The missing-assets test removes files only from a disposable mod copy.
 
 Native footstep sounds are inherited from the pinned wood definitions; project metal/cloth fixtures reference installed `mcl_sounds` defaults. No Mineclonia media is included among the original files. Its mesh, native texture and sound references still require the complete pinned game with its own licenses/credits.
+
+## Paper maps
+
+The illustrated story maps are project-authored Lua drawings built from native formspec boxes, lines and text. No external artwork, fonts or new bitmap/audio assets are bundled for them. The paper item icon remains supplied by the installed pinned game.

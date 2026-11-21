@@ -2,7 +2,7 @@
 
 Target: **Luanti 5.17.0 + Mineclonia 0.124.1**, single player. No optional mods, shaders or external audio packs are required. Install the complete pinned game, including its licenses and credits. Runtime downloads and user worlds are deliberately absent from the package.
 
-This is an automated/server-verified release candidate. Graphical play, actual riding, connected-player death/rejoin, natural movement and subjective audio quality remain unverified; the user waived manual verification. Do not interpret server callback tests as a recorded graphical playthrough.
+This is an automated/server-verified release candidate. Graphical play, actual riding, connected-player death/rejoin, natural movement and subjective audio quality remain unverified; the user waived manual verification. Fragment I and the assembled Harrow map have since been visually inspected in a disposable Luanti client; this narrow map-window check does not establish full-game graphical acceptance. Do not interpret server callback tests as a recorded graphical playthrough.
 
 ## Install into a fresh world
 
@@ -41,7 +41,7 @@ Never change an existing seed to force placement, clear placement flags, reset a
 
 ## Controls and player guidance
 
-- Select story map fragments, the Harrow map or ledgers in the hotbar and right-click air to read them. Left-click also works; sneak-right-click reads when targeting an interactive block. Native empty maps fill on right-click; native filled terrain maps display while held.
+- Select story map fragments, the Harrow map or ledgers in the hotbar and right-click air to read them. Left-click also works; sneak-right-click reads when targeting an interactive block. Story maps open illustrated parchment route sketches and clue notes; the assembled map adds the optional cache inset. Existing saved items work after restarting with the updated mod. Native empty maps fill on right-click; native filled terrain maps display while held.
 - Right-click characters, desks and boards. `/trail` explains objectives and consumed items. Inventory is normally I; native key bindings can be changed.
 - Tame/saddle/ride through Mineclonia's native horse controls. Samuel's saddle recovery is at the ranch; Dutch handles later replacements. No custom horse movement is installed.
 - First meetings use five-second subtitles: sneak skips; right-click again opens dialogue immediately. Scenes never override movement, physics or horse attachment.
@@ -70,6 +70,6 @@ Build with `python3 tools/package-release.py`; it includes only tracked/staged r
 
 ## Remaining limitations and bug reports
 
-Pursuers use bounded on-foot waypoints; mounted enemy AI is absent. NPC routines are intentionally simple, and hay-shelf transitions are schedule repositioning. Combat uses minimal melee/disarm interactions. Terrain paths allow local detours and are verified for walking, not horse clearance. Cold site generation may pause before placement. Graphical legibility, movement, renderer performance and listening quality remain unknown.
+Pursuers use bounded on-foot waypoints; mounted enemy AI is absent. NPC routines are intentionally simple, and hay-shelf transitions are schedule repositioning. Combat uses minimal melee/disarm interactions. Terrain paths allow local detours and are verified for walking, not horse clearance. Cold site generation may pause before placement. Graphical legibility outside the inspected map windows, movement, renderer performance and listening quality remain unknown.
 
 Use `/trail_report` for a privacy-limited report containing engine/pins, schema/layout, act, verdict, public outcome and placed site IDs. It omits player names, inventory, coordinates and hidden honor/trust. Describe the action, expected/actual result and whether it occurred in a new disposable or copied legacy world. Do not attach a world, raw player data or unredacted server logs by default. The privileged `/trail_sites` command is available to the world owner for placement diagnostics. No report is sent automatically.

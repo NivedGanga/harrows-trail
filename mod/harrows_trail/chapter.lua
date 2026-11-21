@@ -192,10 +192,6 @@ local function interact(kind,pos,p,s)
  else return false end
  return true
 end
-core.register_craftitem('harrows_trail:fragment_2',{description='Samuel’s map fragment 2',inventory_image='default_paper.png',on_use=function(_,p) message(p,'Ada’s fragment','Recovered from Samuel’s evidence locker. Crane is pursuing the hidden payroll; Nora’s trail leads east.') end})
-for _,doc in ipairs({{'fragment_3','Samuel’s map fragment 3','The third fragment points toward Silver Spur.'},{'harrow_map','Harrow map','The three fragments reveal the optional Silver Spur cache.'},{'ledger_1','Crane’s ledger page 1','Crane’s route leads from the Ghost Mine to Bitter River. Nora is with him.'},{'ledger_2','Crane’s ledger page 2','Brandt robbed the payroll. Crane knew and framed Samuel. Nora was taken toward Widowmaker Tunnel.'}}) do
- core.register_craftitem('harrows_trail:'..doc[1],{description=doc[2],inventory_image='default_paper.png',on_use=function(stack,p) message(p,doc[2],doc[3]); return stack end})
-end
 for kind,pos in pairs(positions) do
  if kind~='ada' then core.register_node('harrows_trail:'..kind,{description=kind..' — right-click',tiles={'mcl_core_sandstone_normal.png'},groups={unbreakable=1},diggable=false,on_rightclick=function(at,_,p) local s=states[p:get_player_name()]; if s then interact(kind,at,p,s) end; return p:get_wielded_item() end}) end
 end

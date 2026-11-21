@@ -252,13 +252,6 @@ local function interact(kind, pos, player)
 end
 local world_opening = dofile(core.get_modpath("harrows_trail") .. "/world_opening.lua")(interact)
 local world_midgame_nodes = dofile(core.get_modpath("harrows_trail") .. "/world_midgame_nodes.lua")(interact)
-core.register_craftitem("harrows_trail:fragment_1", {
-	description = "Samuel's map fragment 1",
-	inventory_image = "default_paper.png",
-	on_use = function(_, player)
-		message(player, "Samuel's map fragment", "A torn piece of Samuel's map. Nora's ribbon and Crane's tracks led east toward Red Mesa.")
-	end,
-})
 local node_info = {
 	barn = {"Burned barn: search", "default_wood.png^[colorize:#311b12:130"},
 	tack = {"Tack room: recover saddle", "default_wood.png"},
@@ -693,4 +686,5 @@ if core.settings:get_bool("harrows_trail_test",false) then harrows_trail_test.at
 local release=dofile(core.get_modpath("harrows_trail").."/release.lua")({states=states,storage=storage,sites=world_sites})
 if core.settings:get_bool("harrows_trail_test",false) then harrows_trail_test.release=release end
 
-dofile(core.get_modpath('harrows_trail')..'/documents.lua')
+local documents=dofile(core.get_modpath('harrows_trail')..'/documents.lua')({site=site,chapter=chapter,opening=world_buildings,message=message})
+if core.settings:get_bool('harrows_trail_test',false)then harrows_trail_test.documents=documents end

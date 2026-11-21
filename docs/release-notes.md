@@ -13,3 +13,9 @@ Final source and extracted-package suites pass. The no-cache budget retains seve
 ## Right-click document hotfix
 
 Story map fragments, the Harrow map and both ledgers now open on right-click in air or on ordinary blocks, as well as left-click. Interactive blocks retain native priority; sneak-right-click reads instead. Existing saved items, metadata and story state are retained. Native empty/filled terrain-map behavior is unchanged. The new document callback regression is included in the full test runner.
+
+## Illustrated Samuel maps
+
+All three fragments and the assembled Harrow map now open parchment route sketches with landmarks, a north compass, dotted trails and clue notes. The assembled map includes a Silver Spur assay-office cache inset; finding the gold remains optional. The sketches use saved/current story-site positions and support legacy layouts. Existing item IDs, metadata, gates and saves are retained. Ledger readers and native terrain maps retain their controls.
+
+Fragment I and the assembled map were visually inspected in a disposable pinned Luanti client, including corrected heading/footer fit. All four views, legacy projection, three input callbacks per document, node priority and state preservation pass server tests. These are not a full graphical playthrough or physical mouse-click acceptance.

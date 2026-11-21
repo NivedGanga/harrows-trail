@@ -192,4 +192,8 @@ Use `/trail_report` for a report of public progress and versions that excludes p
 
 Select a story map fragment, Harrow map or ledger in the hotbar and **right-click the air** to read it. Left-click also works. When looking at a chest, door or other interactive block, its interaction takes priority; **sneak-right-click** reads the document instead. Existing items work after restarting the same world with the updated mod; no new world or replacement item is needed.
 
-Native Mineclonia maps have different controls: right-click an **empty map** to fill it, then **hold the filled map** to display its terrain image. Story fragments/Harrow map are readable clue documents, not native terrain-map images.
+Samuel’s three fragments and the assembled Harrow map now open illustrated parchment views with town symbols, a north compass, dotted trails and their clue notes. Each fragment reveals its own route; the assembled map adds the optional Silver Spur cache detail. The sketch uses the current world’s story-site coordinates, including older layouts. These are route sketches, not live terrain scans.
+
+Native Mineclonia maps have different controls: right-click an **empty map** to fill it, then **hold the filled map** to display its terrain image.
+
+Map-window verification: Fragment I and the assembled map were inspected in the pinned Luanti 5.17.0 graphical client in a disposable world. All four map views and six document input bindings pass server tests; physical mouse clicks and a full graphical playthrough are not claimed. Run `./tests/run-documents.sh`, `./tests/run-sprint1.sh` and `./tests/run-package.sh .local/releases/harrows-trail-rc1.zip` for the targeted source/progression/installed-package checks. Exact results are in sprint status.
