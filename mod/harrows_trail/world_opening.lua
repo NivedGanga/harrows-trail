@@ -2,7 +2,7 @@ return function(interact)
  local actor_nodes={ada='harrows_trail:grounded_office',jesse='harrows_trail:grounded_jail',ruth='harrows_trail:grounded_saloon'}
  local function spawn(pos,kind)
   local at={x=pos.x+2,y=pos.y-1,z=pos.z}
-  for _,obj in ipairs(core.get_objects_inside_radius(at,0.4)) do
+  for _,obj in ipairs(core.get_objects_inside_radius(at,4)) do
    local ent=obj:get_luaentity()
    if ent and ent.name=='harrows_trail:opening_actor' and ent.kind==kind then return end
   end

@@ -48,12 +48,12 @@ local function epilogue(s)
  return t..gold..trust
 end
 local function scene(s)
- local model='mcl_armor_character.b3d;character.png;0,180;false;false;0,0]'
- local eli='model[0.6,1;1.5,3;eli;'..model
- local nora='model[2.2,1;1.5,3;nora;'..model
+ local function model(role) return 'mcl_armor_character.b3d;harrows_'..role..'.png;0,180;false;false;0,0]' end
+ local eli='model[0.6,1;1.5,3;eli;'..model('eli_duster')
+ local nora='model[2.2,1;1.5,3;nora;'..model('nora')
  if s.verdict=='justice' then
   return 'label[0.4,0.3;Red Mesa courthouse: Ada reads the verdict]'..eli..nora..
-   'model[4.1,1;1.5,3;ada;'..model..'model[5.8,1;1.5,3;crane;'..model
+   'model[4.1,1;1.5,3;ada;'..model('ada')..'model[5.8,1;1.5,3;crane;'..model('crane')
  end
  local horse='mobs_mc_horse.b3d;blank.png,mobs_mc_horse_brown.png,blank.png;0,180;false;false;0,0]'
  if s.verdict=='mercy' then
@@ -166,7 +166,7 @@ core.register_on_leaveplayer(function(p) pending[p:get_player_name()]=nil end)
 -- The existing node names remain as invisible anchors, including in older saves.
 local cast = {mercer=true, nora=true, crane=true, verdict=true, ending=true}
 local function ensure_actor(pos, kind)
- for _, obj in ipairs(core.get_objects_inside_radius(pos, 0.5)) do
+ for _, obj in ipairs(core.get_objects_inside_radius(pos, 4)) do
   local ent = obj:get_luaentity()
   if ent and ent.name == 'harrows_trail:finale_actor' and ent.kind == kind then return end
  end

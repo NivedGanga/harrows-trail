@@ -85,12 +85,13 @@ local function layout(id)
  end
  for _,spec in ipairs(assert(sites[id])) do
   local p,h=spec.pos,spec.half
-  zones[#zones+1]={min={x=p.x-h,y=p.y,z=p.z-h},max={x=p.x+h,y=p.y+(spec.tower and 6 or 3),z=p.z+h}}
-  for dx=-h,h do for dz=-h,h do for dy=0,3 do
+  zones[#zones+1]={min={x=p.x-h,y=p.y,z=p.z-h},max={x=p.x+h,y=p.y+((spec.tower or spec.loft) and 6 or 3),z=p.z+h}}
+  for dx=-h,h do for dz=-h,h do for dy=0,(spec.loft and 6 or 3) do
    local perimeter=math.abs(dx)==h or math.abs(dz)==h
    local door=dx==0 and dz==-h and dy<2
    local include=not door and (dy==3 or perimeter and dy<3)
    if spec.open then include=dy==3 or (math.abs(dx)==h and math.abs(dz)==h and dy<3) end
+   if spec.loft and dy>3 then include=dy==6 or dz==h end
    if include then
     local node=spec.material
     if spec.mine and math.abs(dx)==h and math.abs(dz)==h and dy<3 then node='mcl_trees:wood_spruce' end

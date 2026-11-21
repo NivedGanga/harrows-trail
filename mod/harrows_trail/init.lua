@@ -7,6 +7,7 @@ local late_routes = dofile(core.get_modpath("harrows_trail") .. "/world_lategame
 local midgame_route = dofile(core.get_modpath("harrows_trail") .. "/world_midgame_route.lua")
 local grant = dofile(core.get_modpath("harrows_trail") .. "/inventory.lua")
 local states = {}
+local cast_layer
 core.register_chatcommand("trail_sites", {
  description = "Inspect Harrow's Trail world site status", privs = {server=true},
  func = function()
@@ -27,6 +28,7 @@ local function default_state()
 end
 local function save(name)
 	if states[name] then storage:set_string("player:" .. name, core.write_json(states[name])) end
+ if cast_layer then cast_layer.changed(name) end
 end
 local function load(name)
 	local raw = storage:get_string("player:" .. name)
@@ -654,3 +656,6 @@ finale = dofile(core.get_modpath("harrows_trail") .. "/finale.lua")({
 if grounded_mode then apply_grounded_positions() end
 chapter.context.finale_journal = finale.journal
 if core.settings:get_bool("harrows_trail_test", false) then harrows_trail_test.finale = finale end
+
+cast_layer = dofile(core.get_modpath('harrows_trail')..'/cast.lua')({states=states,save=save,chapter=chapter,finale=finale,late=late_mode,ada=world_buildings.positions.ada})
+if harrows_trail_test then harrows_trail_test.cast=cast_layer end
